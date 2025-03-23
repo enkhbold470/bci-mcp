@@ -84,3 +84,7 @@ We welcome contributions from the community! Check out our [Contributing Guide](
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file in the repository for details.
+
+## New Update (2025-03-23)
+
+This is a test update to trigger the documentation workflow. The documentation should be automatically deployed to GitHub Pages.
