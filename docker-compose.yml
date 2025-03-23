@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  bci-mcp-server:
+    build: .
+    container_name: bci-mcp-server
+    ports:
+      - "8765:8765"
+    volumes:
+      - ./recordings:/app/recordings
+    restart: unless-stopped
+    command: python src/main.py --server
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  docs:
+    build: .
+    container_name: bci-mcp-docs
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: mkdocs serve -a 0.0.0.0:8000
+    depends_on:
+      - bci-mcp-server
+    environment:
+      - PYTHONUNBUFFERED=1
