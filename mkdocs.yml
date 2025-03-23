@@ -49,6 +49,7 @@ nav:
     - MCP Module: api/mcp-module.md
   - Contributing: contributing.md
   - Changelog: changelog.md
+  - Test Page: test.md
 
 plugins:
   - search
