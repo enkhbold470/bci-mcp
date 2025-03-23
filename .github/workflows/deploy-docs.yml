@@ -27,10 +27,23 @@ jobs:
         with:
           enablement: true
       
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install MkDocs and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs-material mkdocstrings mkdocstrings-python
+      
+      - name: Build MkDocs
+        run: mkdocs build
+      
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './docs-static'
+          path: './site'
       
       - name: Deploy to GitHub Pages
         id: deployment
