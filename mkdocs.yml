@@ -1,0 +1,65 @@
+site_name: BCI-MCP Documentation
+site_url: https://enkhbold470.github.io/bci-mcp/
+site_description: Documentation for Brain-Computer Interface with Model Context Protocol
+site_author: enkhbold470
+
+repo_name: enkhbold470/bci-mcp
+repo_url: https://github.com/enkhbold470/bci-mcp
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: purple
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - admonition
+  - footnotes
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+    - Configuration: getting-started/configuration.md
+  - Features:
+    - BCI Features: features/bci-features.md
+    - MCP Integration: features/mcp-integration.md
+    - Advanced Signal Processing: features/signal-processing.md
+  - API Reference:
+    - BCI Module: api/bci-module.md
+    - MCP Module: api/mcp-module.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            members: true
+            inherited_members: true
+            show_root_heading: true
+            show_signature: true
+            separate_signature: true
+            docstring_style: google
