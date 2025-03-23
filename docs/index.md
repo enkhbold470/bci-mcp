@@ -73,6 +73,10 @@ The BCI-MCP system consists of several key components:
                                                   └─────────────────┘
 ```
 
+## Documentation Status
+
+This documentation is automatically built and deployed using GitHub Actions when changes are made to the main branch.
+
 ## Contributing
 
 We welcome contributions from the community! Check out our [Contributing Guide](contributing.md) to learn how you can help.
