@@ -1,169 +1,212 @@
 # MCP Integration
 
-The Model Context Protocol (MCP) integration is a key feature of our BCI system, allowing seamless connection between neural data and AI applications. This page details how our implementation combines brain-computer interfacing with the standardized AI communication protocol.
+This document explains how the Brain-Computer Interface (BCI) integrates with the Model Context Protocol (MCP) in the BCI-MCP system.
 
-## What is MCP?
+## Overview
 
-The Model Context Protocol (MCP) is an open standard developed by Anthropic that enables secure, two-way connections between AI systems and various data sources. It provides a standardized way for:
+The Model Context Protocol (MCP) allows large language models (LLMs) to receive and process brain activity data as additional context. This integration enables AI systems to respond to and adapt based on neural signals, creating a more intuitive human-AI interaction.
 
-- Sharing contextual information with language models
-- Exposing tools and capabilities to AI systems
-- Building composable integrations and workflows
+## Key Integration Points
 
-## BCI-MCP Architecture
-
-Our integration connects BCI technology with MCP through a modular architecture:
+### Data Flow from BCI to MCP
 
 ```
-┌────────────┐      ┌───────────────┐      ┌─────────────┐      ┌───────────────┐
-│            │      │               │      │             │      │               │
-│ EEG Device │─────▶│ BCI Interface │─────▶│ MCP Server │─────▶│ AI Applications│
-│            │      │               │      │             │      │               │
-└────────────┘      └───────────────┘      └─────────────┘      └───────────────┘
+BCI Device → Signal Processing → Feature Extraction → Context Formatting → MCP API → Language Model
 ```
 
-### Key Components
+1. **BCI Device**: Acquires raw neural signals
+2. **Signal Processing**: Filters and cleans the signals
+3. **Feature Extraction**: Extracts meaningful features from processed data
+4. **Context Formatting**: Converts features into MCP-compatible format
+5. **MCP API**: Receives the formatted context
+6. **Language Model**: Uses the context for enhanced responses
 
-1. **BCI Interface**: Handles neural signal acquisition and processing
-2. **MCP Server**: Exposes BCI capabilities via standardized JSON-RPC protocol
-3. **WebSocket Transport**: Provides real-time communication
-4. **Client Connections**: Allows multiple AI applications to access BCI functionality
+## Context Data Format
 
-## MCP Resources
-
-Our implementation exposes several resources through the MCP protocol:
-
-### 1. Brain Signals Resource
-
-Provides access to real-time neural data:
+BCI data is structured into the MCP context format as follows:
 
 ```json
 {
-  "status": "streaming",
-  "sample_rate": 250,
-  "channels": 1,
-  "data": {
-    "timestamps": [0.001, 0.005, ...],
-    "raw": [10243, 10250, ...],
-    "filtered": [0.5, 0.7, ...]
-  },
-  "events": {
-    "count": 5,
-    "recent": [
-      {"id": 5, "timestamp": 1648372591.23, "elapsed_time": 45.7}
-    ]
+  "bci_data": {
+    "metadata": {
+      "device_type": "openBCI",
+      "channels": 8,
+      "sampling_rate": 250,
+      "timestamp": 1679569835.245
+    },
+    "features": {
+      "band_powers": {
+        "alpha": [0.75, 0.65, 0.82, 0.71, 0.68, 0.72, 0.69, 0.77],
+        "beta": [0.45, 0.52, 0.48, 0.51, 0.47, 0.49, 0.50, 0.46],
+        "theta": [0.62, 0.58, 0.63, 0.59, 0.61, 0.60, 0.57, 0.64],
+        "delta": [0.85, 0.88, 0.83, 0.87, 0.86, 0.84, 0.89, 0.82]
+      },
+      "connectivity": {
+        "coherence": [[0.8, 0.5, 0.3], [0.5, 0.7, 0.4], [0.3, 0.4, 0.9]]
+      },
+      "statistics": {
+        "mean": [0.12, 0.15, 0.11, 0.14, 0.13, 0.12, 0.16, 0.11],
+        "variance": [0.05, 0.06, 0.04, 0.05, 0.05, 0.04, 0.06, 0.04]
+      },
+      "events": [
+        {"type": "blink", "timestamp": 1679569835.125, "confidence": 0.92},
+        {"type": "attention_spike", "timestamp": 1679569836.352, "confidence": 0.87}
+      ]
+    },
+    "cognitive_state": {
+      "attention": 0.75,
+      "relaxation": 0.62,
+      "cognitive_load": 0.45,
+      "arousal": 0.58
+    }
   }
 }
 ```
 
-### 2. Session Info Resource
+## Feature Extraction
 
-Provides information about the current BCI session:
+The BCI-MCP system extracts various features from neural signals for use with MCP:
 
-```json
-{
-  "device_connected": true,
-  "streaming": true,
-  "event_count": 12,
-  "duration": 120.5,
-  "start_time": 1648372545.73,
-  "calibration_status": "completed"
-}
+### Spectral Features
+
+- **Band Powers**: Power in different frequency bands (alpha, beta, theta, delta, gamma)
+- **Spectral Entropy**: Measure of unpredictability in the frequency domain
+- **Peak Frequencies**: Dominant frequencies in the signal
+
+### Temporal Features
+
+- **Event-Related Potentials**: Neural responses to specific events
+- **Statistical Measures**: Mean, variance, skewness, kurtosis
+- **Signal Complexity**: Measures like Hjorth parameters and sample entropy
+
+### Spatial Features
+
+- **Spatial Filters**: Common Spatial Patterns (CSP) and similar techniques
+- **Connectivity Measures**: Coherence, phase synchrony between channels
+- **Source Localization**: Estimates of neural source activity
+
+## Cognitive State Estimation
+
+The system estimates cognitive states from BCI data for enhanced interaction:
+
+- **Attention Level**: Focus and engagement
+- **Cognitive Load**: Mental workload
+- **Emotional State**: Valence and arousal
+- **Relaxation**: Calm and meditative states
+
+## Integration Methods
+
+### Direct API Integration
+
+```python
+from bci_mcp.devices import OpenBciDevice
+from bci_mcp.processing import FeatureExtractor
+from bci_mcp.mcp import McpClient
+
+# Initialize BCI device
+device = OpenBciDevice(port="/dev/ttyUSB0")
+device.connect()
+device.start_stream()
+
+# Extract features from BCI data
+extractor = FeatureExtractor()
+bci_data = device.get_data(seconds=5)
+features = extractor.process(bci_data)
+
+# Create MCP client and send query with BCI context
+client = McpClient(api_key="your_api_key")
+response = client.query(
+    prompt="How should I modify my meditation practice based on my current state?",
+    context={"bci_data": features}
+)
+
+print(response.text)
+
+# Clean up
+device.stop_stream()
+device.disconnect()
 ```
 
-### 3. Device Info Resource
+### Streaming Integration
 
-Provides details about the connected BCI hardware:
+For real-time applications, BCI-MCP supports streaming integration:
 
-```json
-{
-  "connected": true,
-  "port": "/dev/tty.usbmodem1101",
-  "device_type": "BCI_MCP_Device",
-  "channels": 1,
-  "sample_rate": 250,
-  "detection_threshold": 5.0,
-  "cooldown_period": 0.5
-}
+```python
+from bci_mcp.devices import OpenBciDevice
+from bci_mcp.processing import StreamProcessor
+from bci_mcp.mcp import McpClient
+
+# Initialize components
+device = OpenBciDevice(port="/dev/ttyUSB0")
+processor = StreamProcessor()
+client = McpClient(api_key="your_api_key")
+
+# Configure streaming callback
+def on_features_extracted(features):
+    response = client.query(
+        prompt="Adapt to my current cognitive state",
+        context={"bci_data": features}
+    )
+    print(response.text)
+
+# Start streaming with processing
+device.connect()
+processor.set_callback(on_features_extracted)
+processor.process_stream(device)
+
+# Run for 60 seconds then clean up
+import time
+time.sleep(60)
+processor.stop()
+device.disconnect()
 ```
 
-## MCP Tools
-
-The BCI-MCP server exposes several tools that AI applications can use:
-
-### Device Control Tools
-
-- **connect_device**: Connect to a BCI device
-- **disconnect_device**: Disconnect from the BCI device
-- **list_available_devices**: List available BCI devices
-
-### Stream Management Tools
-
-- **start_stream**: Start streaming data from the connected device
-- **stop_stream**: Stop streaming data from the connected device
-- **calibrate_device**: Calibrate the BCI device for optimal performance
-- **save_data**: Save the current session data
-
-## Integration Benefits
-
-The BCI-MCP integration offers several advantages:
-
-### 1. Standardized Access
-
-- Consistent API for accessing neural data
-- Language-agnostic protocol
-- Easy integration with AI systems
-
-### 2. Enhanced Capabilities
-
-- AI-assisted signal interpretation
-- Contextual understanding of neural patterns
-- Advanced command mapping
-
-### 3. Security and Privacy
-
-- Controlled access to neural data
-- Structured permission system
-- Data minimization capabilities
-
-### 4. Extensibility
-
-- Support for new BCI features without protocol changes
-- Versioned capability negotiation
-- Backward compatibility
-
-## Example Workflows
-
-The BCI-MCP integration enables sophisticated workflows:
-
-### Assistive Communication
-
-1. BCI detects neural patterns associated with intended speech
-2. MCP server provides this data to an AI assistant
-3. AI interprets the patterns in context of previous communication
-4. AI generates appropriate responses or actions
+## Applications
 
 ### Adaptive Interfaces
 
-1. BCI continuously monitors user's cognitive state
-2. MCP server streams this data to UI management system
-3. AI adjusts interface complexity based on cognitive load
-4. Interface elements adapt in real-time to user's state
+BCI-MCP enables interfaces that adapt to the user's cognitive state:
 
-### Neural Biofeedback
+- Adjusting complexity based on cognitive load
+- Providing more assistance when attention decreases
+- Adapting information presentation based on emotional state
 
-1. BCI processes specific frequency bands in neural data
-2. MCP server provides this data to an AI coach
-3. AI analyzes patterns and provides personalized guidance
-4. User receives feedback to improve neural control
+### Neuro-Augmented AI
 
-## Getting Started with BCI-MCP
+Combining neural data with AI capabilities:
 
-To start using the MCP integration with BCI:
+- Enhanced creative processes using neural feedback
+- Personalized learning systems that adapt to cognitive state
+- Meditation and mindfulness applications with neural guidance
 
-1. Install the BCI-MCP package following our [installation guide](../getting-started/installation.md)
-2. Start the MCP server with `python src/main.py --server`
-3. Connect AI applications to the server via WebSocket at `ws://localhost:8765`
-4. Use standard MCP protocol methods to access BCI functionality
+### Assistive Technology
 
-For more detailed examples, see our [Quick Start Guide](../getting-started/quick-start.md).
+BCI-MCP provides powerful assistive capabilities:
+
+- Communication systems for individuals with motor disabilities
+- Cognitive assistance that adapts to the user's needs
+- Emotional support systems with neural monitoring
+
+## Best Practices
+
+### Privacy and Security
+
+When integrating BCI with MCP, consider these privacy practices:
+
+- Implement data minimization by only sending necessary features
+- Use secure, encrypted connections for all data transmission
+- Provide clear user control over when and what data is sent
+- Consider local processing when possible
+
+### Performance Optimization
+
+For optimal performance:
+
+- Balance feature richness with transmission efficiency
+- Implement caching for frequently used context
+- Use incremental updates for streaming applications
+- Monitor latency and adjust processing accordingly
+
+## Next Steps
+
+For more detailed information on signal processing techniques, see the [Advanced Signal Processing](signal-processing.md) documentation.

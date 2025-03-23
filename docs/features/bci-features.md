@@ -1,107 +1,145 @@
 # BCI Features
 
-Brain-Computer Interfaces (BCIs) enable direct communication between the brain and external devices. Our implementation provides a comprehensive set of features for neural signal acquisition, processing, and utilization.
+This document outlines the key features of the Brain-Computer Interface (BCI) component of the BCI-MCP system.
 
-## Core BCI Features
+## Supported Devices
 
-### 1. Neural Signal Acquisition
+The BCI-MCP system is designed to work with a variety of BCI hardware devices, including:
 
-Our BCI system supports real-time acquisition of electrical signals from brain activity through various interfaces:
+### OpenBCI
 
-- **Serial Port Interface**: Connect to various EEG devices via a standard serial port
-- **Multi-Channel Support**: Process data from single or multiple EEG channels
-- **High Sampling Rate**: Capture neural signals at 250Hz (configurable)
-- **Raw Data Access**: Direct access to unprocessed neural data for custom analysis
+- **Cyton Board**: 8-channel EEG acquisition
+- **Ganglion Board**: 4-channel EEG acquisition
+- **Cyton + Daisy**: 16-channel EEG acquisition
+- **WiFi Shield**: Wireless data transmission
 
-### 2. Signal Processing Pipeline
+### Emotiv
 
-The BCI module implements a sophisticated signal processing pipeline:
+- **EPOC+**: 14-channel EEG headset
+- **EPOC Flex**: Advanced EEG acquisition with flexible positioning
+- **Insight**: 5-channel mobile EEG headset
 
-- **Pre-processing Filters**:
-  - Bandpass filtering (1-45Hz) to focus on relevant neural frequencies
-  - Notch filtering (50/60Hz) to remove power line interference
-  - Artifact rejection to minimize non-neural signals
+### NeuroSky
 
-- **Feature Extraction**:
-  - Time-domain analysis for event detection
-  - Z-score normalization for threshold-based detection
-  - Sliding window analysis for real-time processing
+- **MindWave**: Single-channel EEG headset
 
-- **Classification**:
-  - Threshold-based event detection
-  - Customizable detection parameters
-  - Cooldown mechanisms to prevent false positives
+### Custom Hardware
 
-### 3. Command Generation
+- Support for custom and DIY EEG hardware through configurable device interfaces
 
-The system converts neural signals into commands that can control external devices:
+## Data Acquisition
 
-- **Event Detection**: Identify specific neural patterns like blinks or movements
-- **Command Mapping**: Associate neural events with specific commands or actions
-- **Timing Control**: Precise control over event detection timing and cooldown periods
-- **Callback System**: Register custom handlers for detected neural events
+### Sampling Capabilities
 
-### 4. Feedback Mechanisms
+- Adjustable sampling rates (up to 1000 Hz depending on hardware)
+- Multi-channel data acquisition
+- Real-time impedance checking
+- Signal quality monitoring
 
-Feedback is crucial for BCI learning and adaptation:
+### Data Formats
 
-- **Real-time Visualization**: Display EEG signals and detected events in real-time
-- **Visual Feedback**: Visual indicators when neural events are detected
-- **Session Statistics**: Provide metrics on detection rate, accuracy, and timing
-- **Calibration Guidance**: Help users understand optimal signal production
+- Standard EDF/EDF+ format support
+- CSV export functionality
+- Integration with common EEG data formats
+- Raw data access for custom processing
 
-### 5. Persistence and Analysis
+## EEG Monitoring
 
-The system provides comprehensive data storage and analysis tools:
+### Real-time Visualization
 
-- **Multiple Data Formats**: Save data in NPZ, CSV, or PKL formats
-- **Session Recording**: Complete session data collection with timestamps
-- **Offline Analysis**: Tools for post-session review and analysis
-- **Data Export**: Easy export for use with external analysis tools
+- Time-domain signal plotting
+- Frequency spectrum analysis
+- Topographical mapping
+- Custom visualization components
 
-## Advanced Features
+### Impedance Testing
 
-### Calibration System
+- Real-time electrode impedance monitoring
+- Visual feedback for connection quality
+- Electrode status indicators
 
-The BCI system includes an adaptive calibration system:
+## Supported Paradigms
 
-- **Personalized Thresholds**: Determine optimal detection thresholds for each user
-- **Baseline Recording**: Establish individual baseline neural activity
-- **Noise Level Estimation**: Automatically calculate signal-to-noise ratio
-- **Parameter Adjustment**: Fine-tune detection parameters based on calibration data
+### P300
 
-### Interactive Control
+- Oddball paradigm implementation
+- P300 speller matrix
+- Target detection
 
-Our implementation provides multiple control interfaces:
+### Steady-State Visual Evoked Potentials (SSVEP)
 
-- **Command-line Interface**: Control BCI operations via simple terminal commands
-- **Interactive Console**: User-friendly menu-driven interface for non-technical users
-- **Programmatic API**: Python API for custom application development
-- **MCP Integration**: Model Context Protocol for AI-enhanced capabilities
+- Frequency-coded stimulation
+- Phase-coded stimulation
+- Multi-target detection
 
-### Visualization Tools
+### Motor Imagery
 
-The BCI system includes comprehensive visualization capabilities:
+- Left/right hand imagery
+- Multiple body part classification
+- Continuous control paradigms
 
-- **Real-time Signal Plotting**: View EEG data as it's being recorded
-- **Multi-view Display**: Simultaneously view raw and filtered signals
-- **Event Marking**: Visual indicators for detected neural events
-- **Session Overview**: Summary visualizations of recording sessions
+### Passive BCI
 
-## Extensibility
+- Cognitive workload monitoring
+- Attention level tracking
+- Emotional state detection
 
-The system is designed for easy extension and customization:
+## Markers and Events
 
-- **Modular Architecture**: Clearly separated components for easy modification
-- **Event Callbacks**: Register custom handlers for neural events
-- **Custom Processing**: Add specialized signal processing algorithms
-- **Hardware Abstraction**: Support for different EEG hardware through a common interface
+### Event Annotation
 
-## Use Cases
+- Precise timestamp synchronization
+- Custom event markers
+- Experimental protocol design tools
 
-Our BCI implementation supports numerous applications:
+### Trigger I/O
 
-- **Assistive Technology**: Enable control of devices for individuals with limited mobility
-- **Research**: Neural data collection and analysis for scientific studies
-- **Human-Computer Interaction**: Novel input modalities for computer control
-- **Biofeedback**: Help users improve awareness and control of neural activity
+- External trigger input/output
+- Hardware synchronization
+- Integration with stimulus presentation software
+
+## Extension Capabilities
+
+### Plugin Architecture
+
+- Custom signal processing plugin support
+- Protocol extension framework
+- Device driver extensibility
+
+### API Access
+
+- Comprehensive Python API
+- WebSocket streaming for web applications
+- Network data transmission
+
+## Example Usage
+
+```python
+from bci_mcp.devices import OpenBciDevice
+from bci_mcp.visualization import SignalViewer
+
+# Connect to an OpenBCI Cyton board
+device = OpenBciDevice(port="/dev/ttyUSB0", board_type="cyton")
+device.connect()
+
+# Start data streaming
+device.start_stream()
+
+# Create a real-time signal viewer
+viewer = SignalViewer(device)
+viewer.show()
+
+# Add an event marker
+device.add_marker(code=1, description="Stimulus onset")
+
+# Access raw data
+data = device.get_data(seconds=10)
+
+# Stop streaming when done
+device.stop_stream()
+device.disconnect()
+```
+
+## Next Steps
+
+To understand how these BCI features integrate with the Model Context Protocol, see the [MCP Integration](mcp-integration.md) documentation.

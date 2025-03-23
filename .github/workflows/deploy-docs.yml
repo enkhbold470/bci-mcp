@@ -1,4 +1,4 @@
-name: Deploy MkDocs
+name: Deploy MkDocs Documentation
 
 on:
   push:
@@ -7,26 +7,25 @@ on:
   pull_request:
     branches:
       - main
+  # Allow manual triggering
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       
@@ -35,16 +34,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install mkdocs mkdocs-material mkdocstrings
           pip install pymdown-extensions
+          # Install any other dependencies from requirements.txt that might be needed
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       
       - name: Build documentation
-        run: mkdocs build
+        run: mkdocs build --verbose
       
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1  # Updated to the latest version
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: './site'
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
       
       - name: Deploy to GitHub Pages
         id: deployment
-        if: github.ref == 'refs/heads/main'
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
