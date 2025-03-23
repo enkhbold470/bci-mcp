@@ -3,7 +3,7 @@ name: Deploy GitHub Pages
 on:
   push:
     branches:
-      - main
+      - gh-pages
   # Allow manual triggering
   workflow_dispatch:
 
