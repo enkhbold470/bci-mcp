@@ -125,11 +125,14 @@ The BCI-MCP integration enables a range of cutting-edge applications:
 
 ## Documentation
 
-Comprehensive documentation is available on [our GitHub Pages site](https://enkhbold470.github.io/bci-mcp/).
+The project documentation is built using static HTML files and is available at:
+https://enkhbold470.github.io/bci-mcp/
 
-- [Quick Start Guide](https://enkhbold470.github.io/bci-mcp/getting-started/quick-start/)
-- [BCI Features](https://enkhbold470.github.io/bci-mcp/features/bci-features/)
-- [MCP Integration](https://enkhbold470.github.io/bci-mcp/features/mcp-integration/)
+To modify the documentation:
+
+1. Edit the HTML files in the `docs-static` directory
+2. Commit and push your changes
+3. The GitHub Actions workflow will automatically deploy the updated documentation
 
 ## Contributing
 
