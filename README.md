@@ -132,15 +132,8 @@ The project documentation is hosted on GitHub Pages at: [https://enkhbold470.git
 The documentation is built using MkDocs with the Material theme. To update the documentation:
 
 1. Make changes to the Markdown files in the `docs/` directory on the `main` branch
-2. After committing and pushing your changes to `main`, merge them to the `gh-pages` branch:
-
-   ```bash
-   git checkout gh-pages
-   git merge main
-   git push origin gh-pages
-   ```
-
-3. The GitHub Actions workflow will automatically build and deploy the updated documentation to GitHub Pages.
+2. Commit and push your changes to the `main` branch
+3. The GitHub Actions workflow will automatically build and deploy the updated documentation to GitHub Pages
 
 ### Local Documentation Development
 
