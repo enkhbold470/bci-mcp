@@ -24,7 +24,8 @@ markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
   - pymdownx.inlinehilite
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -54,8 +55,11 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          selection:
+          paths: [.]
+          options:
+            members: true
             inherited_members: true
-          setup_commands:
-            - import sys
-            - sys.path.append(".")
+            show_root_heading: true
+            show_signature: true
+            separate_signature: true
+            docstring_style: google
