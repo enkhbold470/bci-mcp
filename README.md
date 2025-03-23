@@ -125,14 +125,53 @@ The BCI-MCP integration enables a range of cutting-edge applications:
 
 ## Documentation
 
-The project documentation is built using static HTML files and is available at:
-https://enkhbold470.github.io/bci-mcp/
+The project documentation is hosted on GitHub Pages at: [https://enkhbold470.github.io/bci-mcp/](https://enkhbold470.github.io/bci-mcp/)
 
-To modify the documentation:
+### Maintaining the Documentation
 
-1. Edit the HTML files in the `docs-static` directory
-2. Commit and push your changes
-3. The GitHub Actions workflow will automatically deploy the updated documentation
+The documentation is built using MkDocs with the Material theme. To update the documentation:
+
+1. Make changes to the Markdown files in the `docs/` directory on the `main` branch
+2. After committing and pushing your changes to `main`, merge them to the `gh-pages` branch:
+
+   ```bash
+   git checkout gh-pages
+   git merge main
+   git push origin gh-pages
+   ```
+
+3. The GitHub Actions workflow will automatically build and deploy the updated documentation to GitHub Pages.
+
+### Local Documentation Development
+
+To work with the documentation locally:
+
+1. Install the required dependencies:
+
+   ```bash
+   pip install mkdocs-material mkdocstrings mkdocstrings-python
+   ```
+
+2. Run the local server:
+
+   ```bash
+   mkdocs serve
+   ```
+
+3. View the documentation at: http://localhost:8000
+
+## Project Structure
+
+```
+.
+├── docs/                  # Documentation files
+│   ├── api/               # API Documentation
+│   ├── features/          # Feature Documentation
+│   ├── getting-started/   # Getting Started Guides
+│   └── index.md           # Documentation Home Page
+├── mkdocs.yml             # MkDocs Configuration
+└── .github/workflows/     # GitHub Actions Workflows
+```
 
 ## Contributing
 
