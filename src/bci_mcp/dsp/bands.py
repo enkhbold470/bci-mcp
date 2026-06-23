@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import numpy as np
+from scipy.integrate import trapezoid
 from scipy.signal import welch
 
 BANDS: dict[str, tuple[float, float]] = {
@@ -24,7 +25,7 @@ def band_powers(data: np.ndarray, fs: float) -> dict[str, float]:
         if not mask.any():
             out[band] = 0.0
         else:
-            out[band] = float(np.mean(np.trapezoid(psd[:, mask], freqs[mask], axis=-1)))
+            out[band] = float(np.mean(trapezoid(psd[:, mask], freqs[mask], axis=-1)))
     return out
 
 

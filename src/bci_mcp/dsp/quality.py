@@ -17,7 +17,8 @@ def assess_quality(data: np.ndarray, fs: float) -> tuple[float, str, list[str]]:
         score -= 0.6
     elif amp > 400.0:  # implausibly large for scalp EEG
         score -= 0.25
-    if float(np.max(np.abs(data[0]))) > 150.0 and amp <= 2000.0:
+    ch0 = data[0] - np.mean(data[0])
+    if float(np.max(np.abs(ch0))) > 150.0 and amp <= 2000.0:
         artifacts.append("blink")
 
     score = max(0.0, min(1.0, score))

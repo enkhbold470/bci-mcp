@@ -25,3 +25,9 @@ def test_notch_removes_line_noise():
     p60 = fft[np.argmin(np.abs(freqs - 60))]
     p10 = fft[np.argmin(np.abs(freqs - 10))]
     assert p60 < 0.1 * p10
+
+
+def test_notch_above_nyquist_returns_input():
+    data = _sine(10, 100.0, 64)
+    out = notch(data, fs=100.0, freq=60.0)  # 60 Hz >= Nyquist (50 Hz)
+    assert np.array_equal(out, data)

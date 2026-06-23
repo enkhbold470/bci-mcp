@@ -13,5 +13,7 @@ def bandpass(data: np.ndarray, fs: float, low: float = 1.0, high: float = 45.0,
 
 
 def notch(data: np.ndarray, fs: float, freq: float = 60.0, q: float = 30.0) -> np.ndarray:
+    if freq >= 0.5 * fs:
+        return data
     b, a = iirnotch(freq / (0.5 * fs), q)
     return filtfilt(b, a, data, axis=-1)

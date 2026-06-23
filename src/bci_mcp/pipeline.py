@@ -31,9 +31,10 @@ class Pipeline:
     def _raw_metrics_now(self):
         fs = self.device.info.sample_rate
         data = self.stream.latest(self.window)
-        if data.shape[1] < int(fs * 0.5):
+        if data.shape[1] < max(int(fs * 0.5), 64):
             return None, None, data, fs
         filtered = filters.bandpass(data, fs)
+        filtered = filters.notch(filtered, fs, self.notch_freq)
         bp = bands.band_powers(filtered, fs)
         return metrics_mod.raw_metrics(bp), bp, data, fs
 
