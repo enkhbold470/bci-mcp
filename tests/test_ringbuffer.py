@@ -1,4 +1,5 @@
 import numpy as np
+
 from bci_mcp.core.ringbuffer import RingBuffer
 
 

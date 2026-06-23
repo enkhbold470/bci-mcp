@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from bci_mcp.core.device import Chunk, Device, DeviceInfo
 
 

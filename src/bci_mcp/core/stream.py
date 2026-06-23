@@ -1,6 +1,7 @@
 """Stream: a single producer thread draining a Device into a ring buffer."""
 from __future__ import annotations
 
+import logging
 import threading
 import time
 from collections.abc import Callable
@@ -25,6 +26,8 @@ class Stream:
         self._consumers.append(callback)
 
     def start(self) -> None:
+        if self._running:
+            return
         self.device.connect()
         self.device.start()
         self._running = True
@@ -40,7 +43,10 @@ class Stream:
                 with self._lock:
                     self.buffer.write(chunk.data)
                 for cb in self._consumers:
-                    cb(chunk)
+                    try:
+                        cb(chunk)
+                    except Exception:
+                        logging.getLogger(__name__).exception("Consumer callback raised")
             time.sleep(period)
 
     def latest(self, n: int) -> np.ndarray:
