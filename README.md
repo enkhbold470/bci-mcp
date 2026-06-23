@@ -1,193 +1,140 @@
-# Brain-Computer Interface with Model Context Protocol (BCI-MCP)
+# 🧠 BCI-MCP — Plug your brain into any AI
 
-This project integrates Brain-Computer Interface (BCI) technology with the Model Context Protocol (MCP) to create a powerful framework for neural signal acquisition, processing, and AI-enabled interactions.
+> **A real [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server that streams live EEG brain state — focus, calm, attention — from *any* EEG device (or a built-in synthetic brain) straight into Claude and any MCP client.**
 
-[![GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://enkhbold470.github.io/bci-mcp/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/enkhbold470/bci-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/enkhbold470/bci-mcp/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-7c3aed)](https://modelcontextprotocol.io)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://enkhbold470.github.io/bci-mcp/)
 
-## Overview
-
-BCI-MCP combines:
-
-- **Brain-Computer Interface (BCI)**: Real-time acquisition and processing of neural signals
-- **Model Context Protocol (MCP)**: Standardized AI communication interface 
-
-This integration enables advanced applications in healthcare, accessibility, research, and human-computer interaction.
-
-## Key Features
-
-### BCI Core Features
-
-- **Neural Signal Acquisition**: Capture electrical signals from brain activity in real-time
-- **Signal Processing**: Preprocess, extract features, and classify brain signals
-- **Command Generation**: Convert interpreted brain signals into commands
-- **Feedback Mechanisms**: Provide feedback to help users improve control
-- **Real-time Operation**: Process brain activity with minimal delay
-
-### MCP Integration Features
-
-- **Standardized Context Sharing**: Connect BCI data with AI models using MCP
-- **Tool Exposure**: Make BCI functions available to AI applications
-- **Composable Workflows**: Build complex operations combining BCI signals and AI processing
-- **Secure Data Exchange**: Enable privacy-preserving neural data transmission
-
-## System Architecture
-
-The BCI-MCP system consists of several key components:
+**BCI-MCP** is a brain–computer interface (BCI) toolkit and a genuine **Model Context Protocol server**. It reads an EEG (electroencephalography) signal — from an [OpenBCI](https://openbci.com) board, a [Muse](https://choosemuse.com) headband, a NeuroFocus device, any [Lab Streaming Layer](https://labstreaminglayer.org) source, or a **built-in synthetic brain that needs no hardware** — turns it into real-time cognitive metrics, and exposes them to AI assistants like **Claude Desktop** as MCP tools and resources. Your AI can literally read and reason about your brain state.
 
 ```
-┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│                 │      │                 │      │                 │
-│  BCI Hardware   │──────│  BCI Software   │──────│   MCP Server    │
-│                 │      │                 │      │                 │
-└─────────────────┘      └─────────────────┘      └────────┬────────┘
-                                                           │
-                                                           │
-                                                  ┌────────▼────────┐
-                                                  │                 │
-                                                  │  AI Applications │
-                                                  │                 │
-                                                  └─────────────────┘
+$ bci-mcp stream --device synthetic
+
+  FOCUS        ██████████████░░░░░░  0.71
+  CALM         ██████░░░░░░░░░░░░░░  0.32
+  ATTENTION    █████████████████░░░  0.86
+  ENGAGEMENT   ██████████████░░░░░░  0.70
+  α ████  β ███████  θ ██  δ █  γ ███     signal: GOOD
 ```
 
-## Getting Started
+---
 
-### Prerequisites
+## ✨ Why BCI-MCP
 
-- Python 3.10+
-- Compatible EEG hardware (or use simulated mode for testing)
-- Additional dependencies listed in requirements.txt
+- 🔌 **Any EEG device** — one URI, every backend. Synthetic, NeuroFocus (USB + BLE), OpenBCI, Muse, anything on LSL, or a generic serial stream.
+- 🤖 **A real MCP server** — not a toy. Built on the official MCP Python SDK (FastMCP), it plugs into **Claude Desktop** and any MCP client over stdio.
+- 🧪 **Works with zero hardware** — a synthetic brain + recording playback mean `pip install` → working demo → green CI, no headset required.
+- 📊 **Real neuroscience** — band powers (δ θ α β γ via Welch PSD), focus/calm/attention/engagement/fatigue metrics, signal-quality + artifact detection, personalized calibration.
+- 🎮 **Batteries included** — live terminal brain-meter, web dashboard, neurofeedback trainer, session recording (CSV/npz/EDF) + replay, and an LSL publisher for the wider BCI ecosystem.
+- ✅ **Tested & typed** — 75+ hardware-free tests, ruff-clean, CI on Python 3.10–3.12.
 
-### Installation
+## 🧰 Any EEG device
+
+| Device | URI | Install |
+|---|---|---|
+| **Synthetic** (no hardware) | `synthetic://` | core |
+| **NeuroFocus v4** (USB serial) | `neurofocus://serial//dev/tty.usbmodemXXXX` | `[devices]` |
+| **NeuroFocus v4** (BLE) | `neurofocus://ble/NEUROFOCUS_V4_01` | `[devices]` |
+| **OpenBCI** Cyton/Ganglion | `brainflow://cyton?serial_port=/dev/ttyUSB0` | `[devices]` |
+| **Muse** 2 / S | `brainflow://muse_s` | `[devices]` |
+| **Any LSL stream** | `lsl://YourStreamName` | `[lsl]` |
+| **Generic serial** (1 int/line) | `serial:///dev/ttyACM0` | `[devices]` |
+| **Recording replay** | `playback://session.npz` | core |
+
+## 🚀 Quickstart
 
 ```bash
-# Clone the repository
 git clone https://github.com/enkhbold470/bci-mcp.git
 cd bci-mcp
+python -m pip install -e ".[all]"     # or just "." for the core synthetic + MCP path
 
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
+bci-mcp devices                       # list connectable devices/URIs
+bci-mcp stream --device synthetic://  # live terminal brain-meter (no hardware)
+bci-mcp dashboard                     # live web dashboard at http://127.0.0.1:8000
 ```
 
-### Using Docker
-
-For easier setup, you can use Docker:
+Record and replay a session (great for demos and offline analysis):
 
 ```bash
-# Build and start all services
-docker-compose up -d
-
-# Access the documentation at http://localhost:8000
-# The MCP server will be available at ws://localhost:8765
+bci-mcp record --device synthetic:// --seconds 30 --out session.npz
+bci-mcp play session.npz
 ```
 
-### Basic Usage
+Train your focus:
 
 ```bash
-# Start the MCP server
-python src/main.py --server
-
-# Or use the interactive console
-python src/main.py --interactive
-
-# List available EEG devices
-python src/main.py --list-ports
-
-# Record a 60-second BCI session
-python src/main.py --port /dev/tty.usbmodem1101 --record 60
+bci-mcp neurofeedback --device synthetic:// --metric focus --target 0.7
 ```
 
-## Advanced Applications
+## 🤖 Use it from Claude Desktop
 
-The BCI-MCP integration enables a range of cutting-edge applications:
+Add this to your Claude Desktop MCP config (`claude_desktop_config.json`):
 
-### Healthcare and Accessibility
-
-- **Assistive Technology**: Enable individuals with mobility impairments to control devices
-- **Rehabilitation**: Support neurological rehabilitation with real-time feedback
-- **Diagnostic Tools**: Aid in diagnosing neurological conditions
-
-### Research and Development
-
-- **Neuroscience Research**: Facilitate studies of brain function and cognition
-- **BCI Training**: Accelerate learning and adaptation to BCI control
-- **Protocol Development**: Establish standards for neural data exchange
-
-### AI-Enhanced Interfaces
-
-- **Adaptive Interfaces**: Interfaces that adjust based on neural signals and AI assistance
-- **Intent Recognition**: Better understanding of user intent through neural signals
-- **Augmentative Communication**: Enhanced communication for individuals with speech disabilities
-
-## Documentation
-
-The project documentation is hosted on GitHub Pages at: [https://enkhbold470.github.io/bci-mcp/](https://enkhbold470.github.io/bci-mcp/)
-
-### Maintaining the Documentation
-
-The documentation is built using MkDocs with the Material theme. To update the documentation:
-
-1. Make changes to the Markdown files in the `docs/` directory on the `main` branch
-2. Commit and push your changes to the `main` branch
-3. The GitHub Actions workflow will automatically build and deploy the updated documentation to GitHub Pages
-
-### Local Documentation Development
-
-To work with the documentation locally:
-
-1. Install the required dependencies:
-
-   ```bash
-   pip install mkdocs-material mkdocstrings mkdocstrings-python
-   ```
-
-2. Run the local server:
-
-   ```bash
-   mkdocs serve
-   ```
-
-3. View the documentation at: http://localhost:8000
-
-## Project Structure
-
-```
-.
-├── docs/                  # Documentation files
-│   ├── api/               # API Documentation
-│   ├── features/          # Feature Documentation
-│   ├── getting-started/   # Getting Started Guides
-│   └── index.md           # Documentation Home Page
-├── mkdocs.yml             # MkDocs Configuration
-└── .github/workflows/     # GitHub Actions Workflows
+```json
+{
+  "mcpServers": {
+    "bci-mcp": {
+      "command": "bci-mcp",
+      "args": ["serve"]
+    }
+  }
+}
 ```
 
-## Contributing
+Then ask Claude things like *"What's my current focus level?"* or *"Run a 60-second neurofeedback session and tell me how I did."* Claude calls the MCP tools below.
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+**MCP tools:** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `calibrate`, `record`, `start_neurofeedback`, `get_neurofeedback_score`, `mark_event`, `stream_summary`.
+**MCP resources:** `brain://state`, `brain://device`. **Prompt:** `interpret_brain_state`.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 🏗️ Architecture
 
-## License
+```
+EEG device ─► Device (synthetic │ neurofocus │ brainflow │ lsl │ serial │ playback)
+                 │  Chunk (channels × samples, µV)
+                 ▼
+              Stream ──► RingBuffer ──► consumers
+                 ▼
+            DSP Pipeline  (bandpass/notch → Welch band powers → metrics → quality)
+                 │  BrainState (focus, calm, attention, …, signal quality)
+                 ├──► CLI brain-meter / web dashboard
+                 ├──► neurofeedback trainer
+                 ├──► recorder (CSV / npz / EDF)  ◄──► PlaybackDevice
+                 ├──► LSL publisher
+                 └──► MCP server (FastMCP, stdio)  ──►  Claude / any MCP client
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 📦 Install options
 
-## Acknowledgments
+```bash
+pip install -e "."              # core: numpy, scipy, mcp, typer, rich (synthetic + MCP + CLI)
+pip install -e ".[devices]"     # + brainflow, bleak, pyserial (OpenBCI, Muse, NeuroFocus, serial)
+pip install -e ".[lsl]"         # + pylsl (consume/publish Lab Streaming Layer)
+pip install -e ".[edf]"         # + pyedflib (EDF recording)
+pip install -e ".[dashboard]"   # + fastapi, uvicorn (web dashboard)
+pip install -e ".[all]"         # everything
+```
 
-- Inspired by the [OpenBCI](https://openbci.com/) project
-- Built on the [Model Context Protocol](https://modelcontextprotocol.io/) framework
-- Thanks to the neuroscience and AI research communities
+## 🧠 Keywords
 
-## Contact
+EEG · BCI · brain-computer interface · Model Context Protocol · MCP · Claude · AI · neurofeedback · OpenBCI · Muse · BrainFlow · Lab Streaming Layer (LSL) · brainwave · neurotech · neuroscience · Python · real-time signal processing · band power · alpha/beta/theta · focus tracking.
 
-Enkhbold Ganbold - [GitHub Profile](https://github.com/enkhbold470)
+## 📚 Documentation
+
+Full docs: **https://enkhbold470.github.io/bci-mcp/**
+
+## ⚠️ Disclaimer
+
+BCI-MCP is for research, education, and personal experimentation. It is **not a medical device** and must not be used for diagnosis or treatment.
+
+## 🤝 Contributing
+
+Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Run `ruff check src tests && pytest` before opening a PR.
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE).
 
 Project Link: [https://github.com/enkhbold470/bci-mcp](https://github.com/enkhbold470/bci-mcp)
