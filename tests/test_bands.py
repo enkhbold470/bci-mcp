@@ -1,4 +1,5 @@
 import numpy as np
+
 from bci_mcp.dsp.bands import BANDS, band_powers, relative_band_powers
 
 

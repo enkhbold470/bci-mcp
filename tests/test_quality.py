@@ -1,4 +1,5 @@
 import numpy as np
+
 from bci_mcp.dsp.quality import assess_quality
 
 
