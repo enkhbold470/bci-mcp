@@ -21,7 +21,7 @@ This installs: `numpy`, `scipy`, `mcp` (official MCP Python SDK), `typer`, `rich
 | `edf` | pyedflib — record/load EDF files | `pip install -e ".[edf]"` |
 | `dashboard` | FastAPI + uvicorn — live web dashboard | `pip install -e ".[dashboard]"` |
 | `dev` | pytest, ruff, pytest-cov | `pip install -e ".[dev]"` |
-| `all` | Everything above | `pip install -e ".[all]"` |
+| `all` | devices + dashboard + lsl + edf (not dev tools) | `pip install -e ".[all]"` |
 
 ## Verify
 

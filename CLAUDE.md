@@ -70,7 +70,7 @@ bci-mcp serve                        # MCP server (stdio)
 
 ```bash
 ruff check src tests       # linter (must be clean before commit)
-python -m pytest           # runs all tests (75+ hardware-free tests)
+python -m pytest           # runs all tests (80+ hardware-free tests)
 ```
 
 All tests are **hardware-free**: synthetic device, recording playback, in-process LSL, BrainFlow synthetic board. No EEG headset needed.
