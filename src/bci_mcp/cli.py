@@ -17,13 +17,15 @@ console = Console()
 
 @app.command()
 def devices() -> None:
-    """List known device URIs you can connect to."""
-    console.print("[bold]Available device schemes:[/bold]")
-    console.print("  synthetic://              built-in EEG, no hardware (default)")
-    console.print("  neurofocus://ble/<name>   NeuroFocus v4 over BLE        (Plan 2)")
-    console.print("  neurofocus://serial/<port> NeuroFocus v4 over USB       (Plan 2)")
-    console.print("  brainflow://<board>       OpenBCI / Muse / etc.         (Plan 2)")
-    console.print("  lsl://<stream>            any Lab Streaming Layer source (Plan 2)")
+    """List connectable EEG devices and URI schemes."""
+    from .core.registry import discover, list_schemes
+
+    console.print("[bold]Discovered devices:[/bold]")
+    for entry in discover():
+        console.print(f"  {entry['uri']:<28} {entry['name']}")
+    console.print(f"\n[bold]URI schemes:[/bold] {', '.join(list_schemes())}")
+    console.print("  e.g. neurofocus://ble/NEUROFOCUS_V4_01, brainflow://muse_s, "
+                  "brainflow://cyton?serial_port=/dev/ttyUSB0, lsl://MyStream")
 
 
 def _render(state: BrainState | None) -> Table:
