@@ -11,6 +11,8 @@ def save_recording(data: np.ndarray, sample_rate: float, channel_names: list[str
     fmt = (fmt or path.rsplit(".", 1)[-1]).lower()
     metadata = metadata or {}
     if fmt == "npz":
+        if not path.endswith(".npz"):
+            path = path + ".npz"
         np.savez(path, data=data.astype(np.float32), sample_rate=float(sample_rate),
                  channel_names=np.array(channel_names), metadata=json.dumps(metadata))
     elif fmt == "csv":
@@ -28,20 +30,22 @@ def save_recording(data: np.ndarray, sample_rate: float, channel_names: list[str
 
         n_ch = data.shape[0]
         writer = pyedflib.EdfWriter(path, n_ch, file_type=pyedflib.FILETYPE_EDFPLUS)
-        headers = []
-        for i in range(n_ch):
-            ch = data[i]
-            headers.append({
-                "label": channel_names[i], "dimension": "uV",
-                "sample_frequency": float(sample_rate),
-                "physical_min": float(min(ch.min(), -1.0)),
-                "physical_max": float(max(ch.max(), 1.0)),
-                "digital_min": -32768, "digital_max": 32767,
-                "transducer": "", "prefilter": "",
-            })
-        writer.setSignalHeaders(headers)
-        writer.writeSamples([data[i].astype(np.float64) for i in range(n_ch)])
-        writer.close()
+        try:
+            headers = []
+            for i in range(n_ch):
+                ch = data[i]
+                headers.append({
+                    "label": channel_names[i], "dimension": "uV",
+                    "sample_frequency": float(sample_rate),
+                    "physical_min": float(min(ch.min(), -1.0)),
+                    "physical_max": float(max(ch.max(), 1.0)),
+                    "digital_min": -32768, "digital_max": 32767,
+                    "transducer": "", "prefilter": "",
+                })
+            writer.setSignalHeaders(headers)
+            writer.writeSamples([data[i].astype(np.float64) for i in range(n_ch)])
+        finally:
+            writer.close()
     else:
         raise ValueError(f"Unsupported recording format: {fmt}")
     return path
