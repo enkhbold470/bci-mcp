@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bci-mcp"
+version = "0.1.0"
+description = "Plug your brain into any AI — a real Model Context Protocol (MCP) server that streams live EEG brain state (focus, calm, attention) from any EEG device into Claude and any MCP client."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "enkhbold470" }]
+keywords = ["eeg", "bci", "brain-computer-interface", "mcp", "model-context-protocol",
+            "claude", "ai", "neurofeedback", "openbci", "muse", "brainflow", "lsl",
+            "brainwave", "neurotech", "neuroscience"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+]
+dependencies = ["numpy>=1.24", "scipy>=1.10", "mcp>=1.2.0", "typer>=0.12", "rich>=13.0"]
+
+[project.optional-dependencies]
+devices = ["brainflow>=5.10", "bleak>=0.21", "pyserial>=3.5"]
+dashboard = ["fastapi>=0.110", "uvicorn>=0.27", "websockets>=12.0"]
+lsl = ["pylsl>=1.16"]
+edf = ["pyedflib>=0.1.36"]
+dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.4"]
+all = ["bci-mcp[devices,dashboard,lsl,edf]"]
+
+[project.scripts]
+bci-mcp = "bci_mcp.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/enkhbold470/bci-mcp"
+Documentation = "https://enkhbold470.github.io/bci-mcp/"
+Repository = "https://github.com/enkhbold470/bci-mcp"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bci_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
