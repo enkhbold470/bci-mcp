@@ -10,6 +10,7 @@ class BrainService:
     def __init__(self) -> None:
         self._pipeline: Pipeline | None = None
         self._events: list[dict] = []
+        self._nf = None
 
     def list_devices(self) -> dict:
         from ..core.registry import discover, list_schemes
@@ -69,3 +70,26 @@ class BrainService:
             return state
         return {"window_seconds": seconds, "current": state["metrics"],
                 "signal_quality": state["signal_quality"]}
+
+    def record(self, seconds: float = 10.0, path: str = "session.npz",
+               fmt: str | None = None) -> dict:
+        if self._pipeline is None:
+            return {"error": "not connected"}
+        out = self._pipeline.record(seconds=seconds, path=path, fmt=fmt)
+        return {"recorded": True, "path": out, "seconds": seconds}
+
+    def start_neurofeedback(self, metric: str = "focus", target: float = 0.7) -> dict:
+        if self._pipeline is None:
+            return {"error": "not connected"}
+        from ..neurofeedback.trainer import NeurofeedbackSession
+
+        self._nf = NeurofeedbackSession(self._pipeline, metric=metric, target=target)
+        self._nf.start()
+        return {"started": True, "metric": metric, "target": target}
+
+    def get_neurofeedback_score(self) -> dict:
+        nf = getattr(self, "_nf", None)
+        if nf is None:
+            return {"error": "no neurofeedback session — call start_neurofeedback first"}
+        nf.sample()
+        return nf.score()
