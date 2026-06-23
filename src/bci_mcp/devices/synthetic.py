@@ -64,3 +64,18 @@ class SyntheticDevice(Device):
             data[c] = base + noise
         self._t += n
         return Chunk(data=data, timestamps=t.astype(np.float64))
+
+
+def _factory(parsed, params):  # noqa: ANN001
+    return SyntheticDevice(
+        channels=int(params.get("channels", 4)),
+        sample_rate=float(params.get("sample_rate", 256.0)),
+        focus=float(params.get("focus", 0.5)),
+        seed=int(params["seed"]) if "seed" in params else None,
+        uri=f"synthetic://?{parsed.query}" if parsed.query else "synthetic://",
+    )
+
+
+from ..core.registry import register  # noqa: E402
+
+register("synthetic", _factory)
