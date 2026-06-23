@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use BCI-MCP in your research, please cite it."
+title: "BCI-MCP: Plug your brain into any AI"
+abstract: "A Model Context Protocol server that streams live EEG brain state from any EEG device into AI assistants."
+authors:
+  - family-names: Ganbold
+    given-names: Enkhbold
+repository-code: "https://github.com/enkhbold470/bci-mcp"
+url: "https://enkhbold470.github.io/bci-mcp/"
+license: MIT
+keywords:
+  - EEG
+  - brain-computer interface
+  - Model Context Protocol
+  - neurofeedback
+  - BrainFlow
