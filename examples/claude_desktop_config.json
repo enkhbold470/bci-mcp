@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bci-mcp": {
+      "command": "bci-mcp",
+      "args": ["serve"]
+    }
+  }
+}
