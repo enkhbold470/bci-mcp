@@ -1,95 +1,74 @@
-# Advanced Signal Processing
+# Signal Processing
 
-This document describes the advanced signal processing capabilities of the BCI-MCP system.
+The DSP pipeline in `bci_mcp.dsp` converts raw multi-channel EEG (µV) into interpretable cognitive metrics.
 
-## Overview
+## Filters (`bci_mcp.dsp.filters`)
 
-The BCI-MCP system includes powerful signal processing capabilities designed to extract meaningful features from brain activity data. These processing techniques are essential for converting raw EEG signals into usable input for the Model Context Protocol (MCP).
+All filters are zero-phase (using `scipy.signal.filtfilt`) and operate on `(channels, n_samples)` arrays.
 
-## Signal Preprocessing
+### Bandpass filter
 
-### Filtering
-
-The system supports multiple types of filters to clean raw EEG signals:
-
-- **Bandpass Filtering**: Isolates specific frequency bands (e.g., alpha, beta, theta, delta)
-- **Notch Filtering**: Removes power line interference (50Hz or 60Hz)
-- **Spatial Filtering**: Enhances signal-to-noise ratio and separates sources
-- **Adaptive Filtering**: Dynamically adjusts to changing signal conditions
-
-Example implementation:
+1–45 Hz 4th-order Butterworth, applied before all other processing:
 
 ```python
-from src.signal_processing import filters
-
-# Apply bandpass filter to isolate alpha waves (8-13 Hz)
-filtered_signal = filters.bandpass(raw_signal, low_cutoff=8, high_cutoff=13, sampling_rate=250)
-
-# Apply notch filter to remove 60Hz power line interference
-clean_signal = filters.notch(filtered_signal, notch_freq=60, sampling_rate=250)
+from bci_mcp.dsp.filters import bandpass, notch
+filtered = bandpass(data, fs=256.0)          # 1–45 Hz
+filtered = bandpass(data, fs=256.0, low=8, high=13)  # alpha only
 ```
 
-### Artifact Removal
+### Notch filter
 
-The system includes methods for removing common artifacts:
-
-- **Independent Component Analysis (ICA)**: Separates brain activity from artifacts
-- **Wavelet Denoising**: Removes transient noise while preserving signal features
-- **Threshold-based Rejection**: Removes segments with extreme values
-
-## Feature Extraction
-
-### Time Domain Features
-
-- **Event-Related Potentials (ERPs)**: Neural responses time-locked to specific events
-- **Statistical Measures**: Mean, variance, skewness, kurtosis
-- **Hjorth Parameters**: Activity, mobility, complexity
-
-### Frequency Domain Features
-
-- **Power Spectral Density (PSD)**: Distribution of signal power across frequencies
-- **Spectral Band Power**: Power in specific frequency bands (delta, theta, alpha, beta, gamma)
-- **Spectral Entropy**: Measure of spectral complexity
-
-### Time-Frequency Analysis
-
-- **Short-Time Fourier Transform (STFT)**: For time-varying spectral analysis
-- **Wavelet Transform**: Multi-resolution analysis for transient events
-- **Empirical Mode Decomposition**: Adaptive decomposition for non-stationary signals
-
-## Machine Learning Integration
-
-The signal processing pipeline can be integrated with various machine learning approaches:
-
-- **Feature Selection**: Automatic selection of most discriminative features
-- **Classification Algorithms**: SVM, Random Forests, Neural Networks
-- **Deep Learning**: Convolutional and recurrent networks for end-to-end processing
-
-## Performance Optimization
-
-The system is optimized for real-time processing with:
-
-- **GPU Acceleration**: For computationally intensive operations
-- **Parallel Processing**: For multi-channel data
-- **Adaptive Processing**: Automatically adjusts parameters based on signal quality
-
-## Usage Examples
+Removes power-line interference (default 60 Hz; use 50 Hz in Europe):
 
 ```python
-from src.signal_processing import pipeline
-
-# Create a processing pipeline
-proc_pipeline = pipeline.Pipeline([
-    pipeline.Bandpass(low_cutoff=1, high_cutoff=50),
-    pipeline.Notch(notch_freq=60),
-    pipeline.ICA(components=8),
-    pipeline.FeatureExtractor(['psd', 'band_power', 'hjorth'])
-])
-
-# Apply the pipeline to raw EEG data
-features = proc_pipeline.process(raw_eeg_data)
+clean = notch(filtered, fs=256.0, freq=60.0, q=30.0)
 ```
 
-## Next Steps
+## Band powers (`bci_mcp.dsp.bands`)
 
-After understanding the signal processing capabilities, learn about [MCP Integration](mcp-integration.md) to see how these processed signals are used by the Model Context Protocol. 
+Band powers are computed via **Welch PSD** (`scipy.signal.welch`) and integrated with the trapezoid rule. Result is mean absolute power across channels, in µV².
+
+| Band | Frequency range |
+|---|---|
+| delta | 1–4 Hz |
+| theta | 4–8 Hz |
+| alpha | 8–13 Hz |
+| beta | 13–30 Hz |
+| gamma | 30–45 Hz |
+
+```python
+from bci_mcp.dsp.bands import band_powers, relative_band_powers
+bp = band_powers(filtered, fs=256.0)
+# {"delta": 12.3, "theta": 5.6, "alpha": 18.4, "beta": 9.1, "gamma": 2.2}
+
+rbp = relative_band_powers(bp)
+# {"delta": 0.26, "theta": 0.12, "alpha": 0.39, "beta": 0.19, "gamma": 0.05}
+```
+
+## Cognitive metrics (`bci_mcp.dsp.metrics`)
+
+Heuristic ratios derived from band powers (unscaled, then personalized by calibration):
+
+| Metric | Formula | Interpretation |
+|---|---|---|
+| `focus` | β / (α + θ) | Concentration (high beta relative to alpha+theta) |
+| `calm` | α / (α + β) | Relaxation (high alpha relative to beta) |
+| `attention` | β / θ | Beta vs theta |
+| `engagement` | (β + γ) / (α + θ + δ) | Pope-style engagement index |
+| `fatigue` | (θ + δ) / (α + β) | Drowsiness (slow waves dominating) |
+| `meditation` | θ / total | Relative theta power |
+
+All metrics are then passed through `Calibration.apply()` which rescales using a personal baseline (min/max from the calibration recording).
+
+## Signal quality (`bci_mcp.dsp.quality`)
+
+`assess_quality(data, fs)` returns `(score: float, label: str, artifacts: list[str])`:
+
+- **no_contact**: variance < 0.001 — electrode not making contact.
+- **railing**: peak-to-peak > 2000 µV — signal is clipping. Score −0.6.
+- **blink**: peak amplitude > 150 µV on channel 0 without railing. Added to artifact list.
+- Label: `good` (score > 0.75), `fair` (> 0.4), `poor` (≤ 0.4).
+
+## Calibration (`bci_mcp.dsp.calibration`)
+
+`Calibration.from_samples(samples)` computes per-metric min/max from a baseline recording, then `apply(raw)` rescales each metric to 0–1 relative to that baseline. Without calibration, raw ratios are still useful but not normalized.

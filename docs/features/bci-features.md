@@ -1,145 +1,72 @@
 # BCI Features
 
-This document outlines the key features of the Brain-Computer Interface (BCI) component of the BCI-MCP system.
+## Device backends
 
-## Supported Devices
+BCI-MCP uses a URI-based device registry. Every backend implements the same `Device` ABC (`bci_mcp.core.device.Device`) and registers a URI scheme.
 
-The BCI-MCP system is designed to work with a variety of BCI hardware devices, including:
+| Backend | URI prefix | Notes |
+|---|---|---|
+| **Synthetic** | `synthetic://` | No hardware; generates band-mixed EEG |
+| **NeuroFocus v4** | `neurofocus://` | Serial (`neurofocus://serial/PORT`) or BLE (`neurofocus://ble/NAME`) |
+| **BrainFlow** | `brainflow://` | OpenBCI Cyton, Ganglion, Muse 2/S, and more |
+| **LSL** | `lsl://` | Any Lab Streaming Layer-compatible device |
+| **Generic serial** | `serial://` | One integer sample per line at 115200 baud |
+| **Playback** | `playback://` | Replay a recorded `.npz`, `.csv`, or `.edf` file |
 
-### OpenBCI
+The `Device` produces `Chunk` objects: `data` is `(channels, n_samples)` float32 in µV, `timestamps` is `(n_samples,)` in seconds.
 
-- **Cyton Board**: 8-channel EEG acquisition
-- **Ganglion Board**: 4-channel EEG acquisition
-- **Cyton + Daisy**: 16-channel EEG acquisition
-- **WiFi Shield**: Wireless data transmission
+## Acquisition architecture
 
-### Emotiv
-
-- **EPOC+**: 14-channel EEG headset
-- **EPOC Flex**: Advanced EEG acquisition with flexible positioning
-- **Insight**: 5-channel mobile EEG headset
-
-### NeuroSky
-
-- **MindWave**: Single-channel EEG headset
-
-### Custom Hardware
-
-- Support for custom and DIY EEG hardware through configurable device interfaces
-
-## Data Acquisition
-
-### Sampling Capabilities
-
-- Adjustable sampling rates (up to 1000 Hz depending on hardware)
-- Multi-channel data acquisition
-- Real-time impedance checking
-- Signal quality monitoring
-
-### Data Formats
-
-- Standard EDF/EDF+ format support
-- CSV export functionality
-- Integration with common EEG data formats
-- Raw data access for custom processing
-
-## EEG Monitoring
-
-### Real-time Visualization
-
-- Time-domain signal plotting
-- Frequency spectrum analysis
-- Topographical mapping
-- Custom visualization components
-
-### Impedance Testing
-
-- Real-time electrode impedance monitoring
-- Visual feedback for connection quality
-- Electrode status indicators
-
-## Supported Paradigms
-
-### P300
-
-- Oddball paradigm implementation
-- P300 speller matrix
-- Target detection
-
-### Steady-State Visual Evoked Potentials (SSVEP)
-
-- Frequency-coded stimulation
-- Phase-coded stimulation
-- Multi-target detection
-
-### Motor Imagery
-
-- Left/right hand imagery
-- Multiple body part classification
-- Continuous control paradigms
-
-### Passive BCI
-
-- Cognitive workload monitoring
-- Attention level tracking
-- Emotional state detection
-
-## Markers and Events
-
-### Event Annotation
-
-- Precise timestamp synchronization
-- Custom event markers
-- Experimental protocol design tools
-
-### Trigger I/O
-
-- External trigger input/output
-- Hardware synchronization
-- Integration with stimulus presentation software
-
-## Extension Capabilities
-
-### Plugin Architecture
-
-- Custom signal processing plugin support
-- Protocol extension framework
-- Device driver extensibility
-
-### API Access
-
-- Comprehensive Python API
-- WebSocket streaming for web applications
-- Network data transmission
-
-## Example Usage
-
-```python
-from bci_mcp.devices import OpenBciDevice
-from bci_mcp.visualization import SignalViewer
-
-# Connect to an OpenBCI Cyton board
-device = OpenBciDevice(port="/dev/ttyUSB0", board_type="cyton")
-device.connect()
-
-# Start data streaming
-device.start_stream()
-
-# Create a real-time signal viewer
-viewer = SignalViewer(device)
-viewer.show()
-
-# Add an event marker
-device.add_marker(code=1, description="Stimulus onset")
-
-# Access raw data
-data = device.get_data(seconds=10)
-
-# Stop streaming when done
-device.stop_stream()
-device.disconnect()
+```
+Device.read() → Chunk → Stream → RingBuffer → consumers (Pipeline, Recorder, LSL publisher)
 ```
 
-## Next Steps
+`Stream` runs in a background thread, calling `device.read()` at ~4× the chunk rate and feeding a `RingBuffer`. Consumers call `stream.latest(n)` to pull the most recent `n` samples.
 
-To understand how these BCI features integrate with the Model Context Protocol, see the [MCP Integration](mcp-integration.md) documentation.
+## Recording and replay
+
+Record to file:
+
+```bash
+bci-mcp record --device synthetic:// --seconds 60 --out session.npz
+bci-mcp record --device synthetic:// --seconds 60 --out session.csv
+bci-mcp record --device synthetic:// --seconds 60 --out session.edf   # needs [edf]
+```
+
+Replay:
+
+```bash
+bci-mcp play session.npz
+```
+
+The `PlaybackDevice` reads the recording at the original sample rate and loops (optional `?loop=true`).
+
+## Neurofeedback trainer
+
+```bash
+bci-mcp neurofeedback --device synthetic:// --metric focus --target 0.7 --seconds 60
+```
+
+`NeurofeedbackSession` samples the pipeline at 4 Hz, tracks time in-zone (metric ≥ target), streak, and cumulative percentage. The session summary includes `time_in_zone_pct`, `mean_score`, and `best_streak`.
+
+Available metrics: `focus`, `calm`, `attention`, `engagement`, `fatigue`, `meditation`.
+
+## Web dashboard
+
+```bash
+bci-mcp dashboard --device synthetic:// --host 127.0.0.1 --port 8000
+```
+
+FastAPI + uvicorn serve a `/state` JSON endpoint and a live dashboard at `http://127.0.0.1:8000`. Requires the `[dashboard]` install extra.
+
+## LSL publisher
+
+The pipeline can publish its output to a Lab Streaming Layer outlet, making it compatible with the broader BCI ecosystem (OpenViBE, BCI2000, BCILAB, etc.). This is wired in via `bci_mcp.lsl.publisher`.
+
+## Adding a device backend
+
+1. Subclass `bci_mcp.core.device.Device`.
+2. Implement `connect()`, `start()`, `read() → Chunk | None`, `stop()`, `disconnect()`.
+3. Register: `from bci_mcp.core.registry import register; register("myscheme", factory_fn)`.
+
+See `devices/synthetic.py` for the simplest example.
