@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BCI-MCP — Live Brain State</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: ui-sans-serif, system-ui, sans-serif; background:#0b0e14; color:#e6e6e6;
+         margin:0; padding:2rem; }
+  h1 { font-weight:700; letter-spacing:-0.02em; }
+  .sub { color:#8a93a6; margin-top:-0.5rem; }
+  .metric { margin:1rem 0; }
+  .metric .label { display:flex; justify-content:space-between; font-size:0.9rem; }
+  .bar { height:14px; background:#1a2030; border-radius:7px; overflow:hidden; margin-top:4px; }
+  .fill { height:100%; background:linear-gradient(90deg,#4f8cff,#9b6bff); width:0%;
+          transition:width .2s ease; }
+  .bands { display:flex; gap:8px; margin-top:1.5rem; align-items:flex-end; height:120px; }
+  .band { flex:1; text-align:center; }
+  .band .col { background:#2a3650; border-radius:4px 4px 0 0; transition:height .2s; }
+  #signal { margin-top:1rem; font-size:0.9rem; }
+</style>
+</head>
+<body>
+  <h1>BCI-MCP</h1>
+  <p class="sub">Live brain state · plug your brain into any AI</p>
+  <div id="metrics"></div>
+  <div class="bands" id="bands"></div>
+  <div id="signal"></div>
+<script>
+const METRICS = ["focus","calm","attention","engagement","fatigue","meditation"];
+const BANDS = ["delta","theta","alpha","beta","gamma"];
+const mEl = document.getElementById("metrics");
+mEl.innerHTML = METRICS.map(m =>
+  `<div class="metric"><div class="label"><span>${m}</span><span id="v-${m}">–</span></div>
+   <div class="bar"><div class="fill" id="f-${m}"></div></div></div>`).join("");
+const bEl = document.getElementById("bands");
+bEl.innerHTML = BANDS.map(b =>
+  `<div class="band"><div class="col" id="b-${b}" style="height:2px"></div>${b}</div>`).join("");
+
+async function tick(){
+  try {
+    const r = await fetch("/api/state"); const s = await r.json();
+    if (s.metrics){
+      for (const m of METRICS){
+        const v = s.metrics[m] ?? 0;
+        document.getElementById("v-"+m).textContent = v.toFixed(2);
+        document.getElementById("f-"+m).style.width = (v*100)+"%";
+      }
+      const rel = s.relative_band_powers || {};
+      const max = Math.max(0.001, ...BANDS.map(b => rel[b]||0));
+      for (const b of BANDS)
+        document.getElementById("b-"+b).style.height = (8 + 100*((rel[b]||0)/max))+"px";
+      document.getElementById("signal").textContent =
+        `signal: ${s.signal_quality} (${(s.quality_score||0).toFixed(2)})` +
+        (s.artifacts && s.artifacts.length ? ` · ${s.artifacts.join(", ")}` : "");
+    } else {
+      document.getElementById("signal").textContent = "warming up…";
+    }
+  } catch(e){ /* keep polling */ }
+}
+setInterval(tick, 250); tick();
+</script>
+</body>
+</html>
