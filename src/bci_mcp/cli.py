@@ -86,5 +86,65 @@ def mcp_alias(transport: str = typer.Option("stdio")) -> None:
     serve(transport=transport)
 
 
+@app.command()
+def record(device: str = typer.Option("synthetic://"), seconds: float = 10.0,
+           out: str = "session.npz", fmt: str = typer.Option(None)) -> None:
+    """Record a session to a file."""
+    pipeline = Pipeline(device)
+    pipeline.start()
+    try:
+        time.sleep(0.5)  # warm up
+        path = pipeline.record(seconds=seconds, path=out, fmt=fmt)
+        console.print(f"[green]Saved[/green] {path}")
+    finally:
+        pipeline.stop()
+
+
+@app.command()
+def play(path: str, once: bool = typer.Option(False)) -> None:
+    """Replay a recording through the live brain-meter."""
+    stream(device=f"playback://{path}", once=once)
+
+
+@app.command()
+def neurofeedback(device: str = typer.Option("synthetic://"),
+                  metric: str = "focus", target: float = 0.7,
+                  seconds: float = 30.0) -> None:
+    """Run a neurofeedback session and print a summary."""
+    from .neurofeedback.trainer import NeurofeedbackSession
+
+    pipeline = Pipeline(device)
+    pipeline.start()
+    sess = NeurofeedbackSession(pipeline, metric=metric, target=target)
+    sess.start()
+    try:
+        time.sleep(0.5)
+        end = time.time() + seconds
+        with Live(console=console, refresh_per_second=4) as live:
+            while time.time() < end:
+                time.sleep(0.25)
+                sess.sample()
+                s = sess.score()
+                live.update(f"{metric}: {s['current']:.2f}  in-zone: "
+                            f"{s['cumulative_in_zone_pct']:.0f}%")
+        summary = sess.summary()
+        console.print(f"[bold]Session:[/bold] {summary.time_in_zone_pct:.0f}% in zone, "
+                      f"mean {summary.mean_score:.2f}, best streak {summary.best_streak}")
+    except KeyboardInterrupt:
+        pass
+    finally:
+        pipeline.stop()
+
+
+@app.command()
+def dashboard(device: str = typer.Option("synthetic://"), host: str = "127.0.0.1",
+              port: int = 8000) -> None:
+    """Launch the live web dashboard."""
+    from .dashboard.server import serve_dashboard
+
+    console.print(f"[green]Dashboard[/green] http://{host}:{port}  (device: {device})")
+    serve_dashboard(device=device, host=host, port=port)
+
+
 if __name__ == "__main__":
     app()

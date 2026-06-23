@@ -87,5 +87,23 @@ def interpret_brain_state() -> str:
     )
 
 
+@mcp.tool()
+def record(seconds: float = 10.0, path: str = "session.npz", fmt: str | None = None) -> dict:
+    """Record the live stream for N seconds to a file (npz/csv/edf)."""
+    return _service.record(seconds, path, fmt)
+
+
+@mcp.tool()
+def start_neurofeedback(metric: str = "focus", target: float = 0.7) -> dict:
+    """Begin a neurofeedback session rewarding time spent above a metric target."""
+    return _service.start_neurofeedback(metric, target)
+
+
+@mcp.tool()
+def get_neurofeedback_score() -> dict:
+    """Sample the current neurofeedback score (in-zone now + cumulative %)."""
+    return _service.get_neurofeedback_score()
+
+
 def serve(transport: str = "stdio") -> None:
     mcp.run(transport=transport)

@@ -52,3 +52,30 @@ def test_mark_event_increments():
     svc = BrainService()
     assert svc.mark_event("baseline")["total_events"] == 1
     assert svc.mark_event("task")["total_events"] == 2
+
+
+def test_record_and_neurofeedback(tmp_path):
+    import time
+
+    svc = BrainService()
+    svc.connect("synthetic://?seed=1")
+    try:
+        time.sleep(0.5)
+        out = svc.record(seconds=0.4, path=str(tmp_path / "s.npz"))
+        assert out["path"].endswith(".npz")
+
+        started = svc.start_neurofeedback(metric="focus", target=0.5)
+        assert started["metric"] == "focus"
+        time.sleep(0.4)
+        for _ in range(5):
+            time.sleep(0.1)
+            score = svc.get_neurofeedback_score()
+        assert "cumulative_in_zone_pct" in score
+    finally:
+        svc.disconnect()
+
+
+def test_neurofeedback_requires_connection():
+    svc = BrainService()
+    assert "error" in svc.start_neurofeedback()
+    assert "error" in svc.get_neurofeedback_score()
