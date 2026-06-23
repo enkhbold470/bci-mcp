@@ -45,6 +45,9 @@ Repository = "https://github.com/enkhbold470/bci-mcp"
 [tool.hatch.build.targets.wheel]
 packages = ["src/bci_mcp"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"src/bci_mcp/dashboard/static" = "bci_mcp/dashboard/static"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
