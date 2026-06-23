@@ -1,7 +1,6 @@
 import time
 
 import numpy as np
-import pytest
 
 from bci_mcp.core.registry import create_device
 from bci_mcp.devices.neurofocus import NeuroFocusDevice

@@ -12,11 +12,9 @@ class BrainService:
         self._events: list[dict] = []
 
     def list_devices(self) -> dict:
-        return {
-            "devices": [
-                {"uri": "synthetic://", "name": "Synthetic EEG", "needs_hardware": False},
-            ]
-        }
+        from ..core.registry import discover, list_schemes
+
+        return {"devices": discover(), "schemes": list_schemes()}
 
     def connect(self, device_uri: str = "synthetic://") -> dict:
         if self._pipeline is not None:
