@@ -45,10 +45,12 @@ def load_recording(path: str) -> Recording:
         import pyedflib
 
         reader = pyedflib.EdfReader(path)
-        n = reader.signals_in_file
-        names = [reader.getLabel(i) for i in range(n)]
-        rate = reader.getSampleFrequency(0)
-        data = np.vstack([reader.readSignal(i) for i in range(n)]).astype(np.float32)
-        reader.close()
+        try:
+            n = reader.signals_in_file
+            names = [reader.getLabel(i) for i in range(n)]
+            rate = reader.getSampleFrequency(0)
+            data = np.vstack([reader.readSignal(i) for i in range(n)]).astype(np.float32)
+        finally:
+            reader.close()
         return Recording(data=data, sample_rate=float(rate), channel_names=names)
     raise ValueError(f"Unsupported recording format: .{ext}")

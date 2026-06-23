@@ -76,8 +76,11 @@ class Pipeline:
         recorder = Recorder()
         self.stream.add_consumer(recorder)
         recorder.start()
-        time.sleep(seconds)
-        recorder.stop()
+        try:
+            time.sleep(seconds)
+        finally:
+            recorder.stop()
+            self.stream.remove_consumer(recorder)
         data = recorder.data()
         return save_recording(
             data, self.device.info.sample_rate, self.device.info.channel_names, path, fmt,

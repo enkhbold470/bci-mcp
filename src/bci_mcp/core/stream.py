@@ -25,6 +25,10 @@ class Stream:
     def add_consumer(self, callback: Callable[[Chunk], None]) -> None:
         self._consumers.append(callback)
 
+    def remove_consumer(self, callback: Callable[[Chunk], None]) -> None:
+        if callback in self._consumers:
+            self._consumers.remove(callback)
+
     def start(self) -> None:
         if self._running:
             return

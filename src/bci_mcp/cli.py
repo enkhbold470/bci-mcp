@@ -103,7 +103,7 @@ def record(device: str = typer.Option("synthetic://"), seconds: float = 10.0,
 @app.command()
 def play(path: str, once: bool = typer.Option(False)) -> None:
     """Replay a recording through the live brain-meter."""
-    stream(device=f"playback://{path}", once=once)
+    stream(device=f"playback://{path}?loop=true", once=once)
 
 
 @app.command()

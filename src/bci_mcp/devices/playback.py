@@ -10,10 +10,10 @@ from ..recording.reader import Recording, load_recording
 
 class PlaybackDevice(Device):
     def __init__(self, recording: Recording | str, chunk_samples: int = 32,
-                 speed: float = 1.0, loop: bool = False, uri: str | None = None) -> None:
+                 loop: bool = False, uri: str | None = None) -> None:
         rec = load_recording(recording) if isinstance(recording, str) else recording
         self._rec = rec
-        self.chunk_samples = max(1, int(chunk_samples * max(speed, 1e-6)))
+        self.chunk_samples = max(1, int(chunk_samples))
         self.loop = loop
         self._pos = 0
         self._streaming = False
@@ -56,7 +56,7 @@ class PlaybackDevice(Device):
 def _factory(parsed, params):  # noqa: ANN001
     path = (parsed.netloc + parsed.path) or params.get("path", "")
     return PlaybackDevice(
-        recording=path, speed=float(params.get("speed", 1.0)),
+        recording=path,
         loop=params.get("loop", "false").lower() == "true", uri=parsed.geturl(),
     )
 

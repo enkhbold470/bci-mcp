@@ -88,7 +88,7 @@ class BrainService:
         return {"started": True, "metric": metric, "target": target}
 
     def get_neurofeedback_score(self) -> dict:
-        nf = getattr(self, "_nf", None)
+        nf = self._nf
         if nf is None:
             return {"error": "no neurofeedback session — call start_neurofeedback first"}
         nf.sample()
