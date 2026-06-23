@@ -11,7 +11,7 @@
 **BCI-MCP** is a brain–computer interface (BCI) toolkit and a genuine **Model Context Protocol server**. It reads an EEG (electroencephalography) signal — from an [OpenBCI](https://openbci.com) board, a [Muse](https://choosemuse.com) headband, a NeuroFocus device, any [Lab Streaming Layer](https://labstreaminglayer.org) source, or a **built-in synthetic brain that needs no hardware** — turns it into real-time cognitive metrics, and exposes them to AI assistants like **Claude Desktop** as MCP tools and resources. Your AI can literally read and reason about your brain state.
 
 ```
-$ bci-mcp stream --device synthetic
+$ bci-mcp stream --device synthetic://
 
   FOCUS        ██████████████░░░░░░  0.71
   CALM         ██████░░░░░░░░░░░░░░  0.32
@@ -29,7 +29,7 @@ $ bci-mcp stream --device synthetic
 - 🧪 **Works with zero hardware** — a synthetic brain + recording playback mean `pip install` → working demo → green CI, no headset required.
 - 📊 **Real neuroscience** — band powers (δ θ α β γ via Welch PSD), focus/calm/attention/engagement/fatigue metrics, signal-quality + artifact detection, personalized calibration.
 - 🎮 **Batteries included** — live terminal brain-meter, web dashboard, neurofeedback trainer, session recording (CSV/npz/EDF) + replay, and an LSL publisher for the wider BCI ecosystem.
-- ✅ **Tested & typed** — 75+ hardware-free tests, ruff-clean, CI on Python 3.10–3.12.
+- ✅ **Tested & typed** — 80+ hardware-free tests, ruff-clean, CI on Python 3.10–3.12.
 
 ## 🧰 Any EEG device
 
