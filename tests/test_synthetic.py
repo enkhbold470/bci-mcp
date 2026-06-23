@@ -1,4 +1,5 @@
 import numpy as np
+
 from bci_mcp.devices.synthetic import SyntheticDevice
 
 

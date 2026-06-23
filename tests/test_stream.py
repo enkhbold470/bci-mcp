@@ -12,7 +12,7 @@ def test_stream_fills_buffer():
     s.stop()
     data = s.latest(64)
     assert data.shape[0] == 2
-    assert data.shape[1] > 0
+    assert data.shape[1] >= 32
 
 
 def test_consumer_receives_chunks():

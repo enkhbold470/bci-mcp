@@ -14,7 +14,7 @@ keywords = ["eeg", "bci", "brain-computer-interface", "mcp", "model-context-prot
             "claude", "ai", "neurofeedback", "openbci", "muse", "brainflow", "lsl",
             "brainwave", "neurotech", "neuroscience"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
