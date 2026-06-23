@@ -99,7 +99,7 @@ def _factory(parsed, params):  # noqa: ANN001
         baud=int(params.get("baud", 115200)),
         sample_rate=float(params.get("sample_rate", 250.0)),
         scale_uv=float(params.get("scale_uv", 1.0)),
-        uri=f"serial://{port}",
+        uri=parsed.geturl(),
     )
 
 
