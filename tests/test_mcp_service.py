@@ -39,3 +39,16 @@ def test_server_module_registers_tools():
 
     assert server.mcp is not None
     assert callable(server.serve)
+
+
+def test_methods_report_not_connected():
+    svc = BrainService()
+    assert "error" in svc.get_band_powers()
+    assert "error" in svc.get_signal_quality()
+    assert "error" in svc.stream_summary()
+
+
+def test_mark_event_increments():
+    svc = BrainService()
+    assert svc.mark_event("baseline")["total_events"] == 1
+    assert svc.mark_event("task")["total_events"] == 2

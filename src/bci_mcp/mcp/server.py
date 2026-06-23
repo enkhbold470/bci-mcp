@@ -59,7 +59,8 @@ def mark_event(label: str) -> dict:
 
 @mcp.tool()
 def stream_summary(seconds: int = 30) -> dict:
-    """Summarize recent brain activity over the last N seconds."""
+    """Current brain-state snapshot. (The `seconds` window for rolling stats arrives in a
+    later phase; this currently returns the live reading.)"""
     return _service.stream_summary(seconds)
 
 
