@@ -2,73 +2,102 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What this project actually is
+## What this project is
 
-A small Python application that reads a **single-channel EEG signal from a serial device**, filters it in real time, detects "neural events" by z-score thresholding, and optionally exposes that functionality over a **JSON-RPC 2.0 WebSocket API**. The repo is dominated by documentation (an MkDocs site under `docs/` plus a hand-written static site under `docs-static/`); the implementation is just three source files.
+**BCI-MCP** is a Python package (`src/bci_mcp/`) that provides:
 
-The entire implementation lives in:
-- `src/bci/brain_interface.py` — the `BrainInterface` class (all signal acquisition, filtering, event detection, recording, plotting) plus `list_serial_ports()`. This is the core; everything else wraps it.
-- `src/mcp/server.py` — a WebSocket + JSON-RPC server that wraps a single global `BrainInterface` instance and exposes it as `get_resource_*` and `invoke_tool_*` methods.
-- `src/main.py` — the CLI entry point and an interactive text-menu console.
+- **Device-agnostic EEG acquisition** via a URI registry (synthetic, NeuroFocus serial+BLE, BrainFlow/OpenBCI/Muse, LSL, generic serial, recording playback).
+- **A real MCP server** built on the official MCP Python SDK (`mcp` on PyPI, `FastMCP`), exposing live brain state to Claude Desktop and any MCP client over stdio.
+- **A DSP pipeline** that turns raw EEG into `BrainState` (focus, calm, attention, engagement, fatigue, meditation + δθαβγ band powers + signal quality).
+- **A Rich CLI** with commands: `devices`, `stream`, `record`, `play`, `neurofeedback`, `dashboard`, `serve`.
+- **Recording** (CSV/npz/EDF) + replay, neurofeedback trainer, LSL publisher, FastAPI web dashboard.
 
-> **"MCP" here is a misnomer.** This does **not** use the official Model Context Protocol SDK (`mcp` on PyPI) or its stdio/SSE transports. It is a bespoke JSON-RPC-over-WebSocket API (via the `jsonrpcserver` library) that borrows MCP's "resources" and "tools" vocabulary. Do not assume `modelcontextprotocol`-SDK behavior. The local package directory `src/mcp/` shadows that PyPI package name.
+## Package layout
 
-## Running it
+```
+src/bci_mcp/
+├── __init__.py            # triggers device registration; __version__ = "0.1.0"
+├── cli.py                 # Typer CLI (entry point: bci-mcp)
+├── pipeline.py            # Pipeline: Device → Stream → DSP → BrainState
+├── core/
+│   ├── device.py          # Device ABC, Chunk, DeviceInfo dataclasses
+│   ├── registry.py        # URI registry (register/create_device/discover)
+│   ├── ringbuffer.py      # RingBuffer
+│   └── stream.py          # Stream (background thread polling device.read())
+├── devices/
+│   ├── synthetic.py       # SyntheticDevice — no hardware needed
+│   ├── neurofocus.py      # NeuroFocus v4 (serial + BLE)
+│   ├── brainflow_device.py # BrainFlow (OpenBCI, Muse, ...)
+│   ├── lsl_device.py      # LSL consumer
+│   ├── serial_device.py   # Generic serial (1 int/line)
+│   └── playback.py        # PlaybackDevice (npz/csv/edf replay)
+├── dsp/
+│   ├── filters.py         # bandpass + notch (zero-phase, scipy.signal.filtfilt)
+│   ├── bands.py           # band_powers() via Welch PSD, relative_band_powers()
+│   ├── metrics.py         # raw_metrics() — focus/calm/attention/engagement/fatigue/meditation
+│   ├── state.py           # BrainState dataclass
+│   ├── quality.py         # assess_quality() — signal score + artifact flags
+│   └── calibration.py     # Calibration — personalized min/max scaling
+├── mcp/
+│   ├── server.py          # FastMCP tools/resources/prompt + serve()
+│   └── service.py         # BrainService — testable core (server.py wraps this)
+├── recording/
+│   ├── recorder.py        # Recorder stream consumer
+│   ├── writer.py          # save_recording() — npz/csv/edf
+│   └── reader.py          # load_recording() → Recording dataclass
+├── neurofeedback/
+│   └── trainer.py         # NeurofeedbackSession
+├── lsl/
+│   └── publisher.py       # LSL outlet publisher
+└── dashboard/
+    └── server.py          # FastAPI web dashboard
+```
 
-There is no installed console script; everything is launched via `src/main.py` **from the repo root** (this puts `src/` on `sys.path`, which the absolute imports in `main.py` rely on):
+## Install and run
 
 ```bash
-python src/main.py --server          # start the JSON-RPC WebSocket server on ws://0.0.0.0:8765
-python src/main.py --interactive     # interactive text-menu console (also the default with no args)
-python src/main.py --list-ports      # list available serial ports
-python src/main.py --port <PORT> --record 60 [--plot] [--format npz|csv|pkl]
-python src/main.py --port <PORT> --calibrate [--calibrate-duration 10]
+pip install -e ".[all,dev]"          # all extras + dev tools
+
+bci-mcp devices                      # list URI schemes + discovered hardware
+bci-mcp stream --device synthetic:// # live terminal brain-meter
+bci-mcp stream --device synthetic:// --once   # single snapshot (good for CI smoke)
+bci-mcp record --device synthetic:// --seconds 10 --out session.npz
+bci-mcp play session.npz
+bci-mcp serve                        # MCP server (stdio)
 ```
-
-Recordings are written to `./recordings/` (created automatically; git-ignored, as are `*.npz`, `*.csv`, `*.pkl`, `*.log`).
-
-### Docker
-
-```bash
-docker-compose up -d      # bci-mcp-server (ws://localhost:8765) + docs (mkdocs serve on http://localhost:8000)
-```
-
-## ⚠️ Known issue: the app does not import as written (verify before assuming it runs)
-
-`main.py` uses **absolute** imports (`from bci.brain_interface import ...`, `from mcp.server import run_server`) which require `src/` on the path. But `src/mcp/server.py` uses a **relative** import (`from ..bci.brain_interface import ...`). When launched the documented way (`python src/main.py`, with `src/` as the path root), `mcp` is a top-level package, so `..bci` raises:
-
-```
-ImportError: attempted relative import beyond top-level package
-```
-
-Because `main.py` imports `mcp.server` unconditionally at module top, this affects **every** invocation, not just `--server` (verified with an isolated reproduction of the package layout). The fix is to make the import style consistent — e.g. change `server.py` to `from bci.brain_interface import ...`. If you touch the run path, test an actual launch rather than trusting the docs.
-
-There are additional latent runtime bugs in `server.py` (e.g. `get_resource_brain_signals` reads `brain_interface.BUFFER_SIZE` as an instance attribute, but `BUFFER_SIZE` is a module-level constant). Treat the server path as unverified.
-
-## ⚠️ The documentation is aspirational, not descriptive
-
-`docs/api/bci-module.md` and `docs/api/mcp-module.md` describe classes that **do not exist in the code** (`BciDevice`, `OpenBciDevice`, `EmotivDevice`, `McpClient`, `McpResponse`, `BciContextProcessor`, `FeatureExtractor`, …). The real code has exactly one device class (`BrainInterface`) and a flat set of JSON-RPC methods. Although `mkdocs.yml` configures the `mkdocstrings` plugin, the API pages are **hand-written stubs** (function bodies are `pass`) and contain **no autodoc directives**, so nothing is generated from source. When reasoning about behavior, read `src/`, not `docs/`. `docs/getting-started/quick-start.md` does accurately reflect the real CLI flags and JSON-RPC method names.
-
-`docs/contributing.md` also references files/tooling that don't exist in the repo (`requirements-dev.txt`, `pre-commit` config).
 
 ## Tests
 
-`pytest` and `pytest-cov` are in `requirements.txt` and `docs/contributing.md` says to run `pytest`, but **there are no test files in the repo** and **no CI workflow runs tests**. `pytest` currently collects nothing.
+```bash
+ruff check src tests       # linter (must be clean before commit)
+python -m pytest           # runs all tests (75+ hardware-free tests)
+```
 
-## Signal processing pipeline (the core domain logic)
+All tests are **hardware-free**: synthetic device, recording playback, in-process LSL, BrainFlow synthetic board. No EEG headset needed.
 
-In `BrainInterface`, expect these fixed assumptions (module constants at the top of `brain_interface.py`): `SAMPLE_RATE = 250` Hz, single channel (`EEG_CHANNELS = 1`), 5-second circular buffers (`BUFFER_SIZE = 1250`), 115200 baud serial.
+## Architecture
 
-Data flow:
-1. `_stream_data()` runs in a daemon thread, reads one integer sample per serial line, sign-corrects 24-bit ADC values (`> 0x800000` → subtract `0x1000000`), and writes into circular `raw_buffer`/`filtered_buffer`.
-2. Real-time filtering uses **stateful** `signal.lfilter` (1–45 Hz Butterworth bandpass + 60 Hz notch) carrying filter state between samples. Note offline analysis (`_apply_filters`) uses **zero-phase `filtfilt`** instead — two different filter paths exist.
-3. `_detect_neural_event()` computes a z-score over a sliding `window_size` (50 samples ≈ 200 ms) and fires an event when `max|z| > detection_threshold` (default 50.0) subject to a `cooldown_period` (default 0.5 s). `calibrate()` exists but currently just hard-codes the threshold to 5.0 rather than deriving it from baseline.
-4. Detected events invoke an optional callback registered via `register_event_callback()` — this is how `server.py` mirrors events into its global `session_data` dict.
+```
+Device.read() → Chunk → Stream (background thread) → RingBuffer
+                                                          │
+Pipeline.current_state() pulls latest N samples, runs:   │
+  filters.bandpass + filters.notch                        │
+  → bands.band_powers (Welch PSD)                         │
+  → metrics.raw_metrics                                   │
+  → calibration.apply → BrainState                        │
+                                                          │
+Consumers: CLI brain-meter, FastMCP server, FastAPI dashboard,
+           Recorder (→ npz/csv/edf), LSL publisher, NeurofeedbackSession
+```
 
-The server keeps all live state in two module-level globals: `brain_interface` (the device) and `session_data` (a connection/streaming/event summary). All `@method` handlers mutate these.
+## Device URI registry
 
-## Documentation deployment
+Every device backend calls `bci_mcp.core.registry.register(scheme, factory)` at import time. `create_device(uri)` parses the URI and calls the factory. Schemes: `synthetic`, `neurofocus`, `brainflow`, `lsl`, `serial`, `playback`.
 
-Three GitHub Actions workflows (`ci.yml`, `docs.yml`, `deploy-docs.yml`) **all run `mkdocs gh-deploy --force` on push to `main`** — they are redundant and all deploy the same MkDocs site to GitHub Pages (custom domain via `docs/CNAME`). The `docs-static/` directory is a separate, manually-maintained HTML site that is **not** wired into any workflow. None of the workflows build, lint, or test the Python code. Editing under `docs/` or `mkdocs.yml` is what triggers a docs redeploy.
+## MCP server
 
-To preview docs locally: `pip install mkdocs-material mkdocstrings mkdocstrings-python && mkdocs serve`.
+`bci_mcp.mcp.server` uses `FastMCP` from the official MCP Python SDK. It runs over **stdio** (the standard for Claude Desktop). Tools: `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `calibrate`, `record`, `start_neurofeedback`, `get_neurofeedback_score`, `mark_event`, `stream_summary`. Resources: `brain://state`, `brain://device`. Prompt: `interpret_brain_state`.
+
+## Design docs
+
+Specs and implementation plans live under `docs/superpowers/`.
