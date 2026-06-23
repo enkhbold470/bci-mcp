@@ -1,209 +1,92 @@
-# Quick Start Guide
+# Quick Start
 
-This guide will help you get started with BCI-MCP quickly. We'll walk through installation, basic configuration, and running your first BCI session with MCP integration.
+No EEG hardware needed — the **synthetic device** generates realistic brainwaves so you can run the full demo with just `pip install`.
 
-## Prerequisites
-
-Before you begin, make sure you have:
-
-- Python 3.10 or newer
-- Compatible EEG hardware (or use simulated mode for testing)
-- Basic understanding of terminal/command line usage
-
-## Installation
-
-### 1. Clone the Repository
+## 1. Install
 
 ```bash
 git clone https://github.com/enkhbold470/bci-mcp.git
 cd bci-mcp
+pip install -e ".[all]"
 ```
 
-### 2. Create a Virtual Environment
-
-We recommend using a virtual environment to avoid conflicts with other Python packages:
+## 2. Check available devices
 
 ```bash
-# Using venv
-python -m venv venv
-
-# Activate on Windows
-venv\Scripts\activate
-
-# Activate on macOS/Linux
-source venv/bin/activate
+bci-mcp devices
 ```
 
-### 3. Install Dependencies
+Lists every URI scheme registered (synthetic, neurofocus, brainflow, lsl, serial, playback) and any auto-discovered hardware.
+
+## 3. Live terminal brain-meter
 
 ```bash
-pip install -r requirements.txt
+bci-mcp stream --device synthetic://
 ```
 
-## Basic Usage
-
-### Running in Interactive Mode
-
-The simplest way to start is with the interactive console mode:
+Press Ctrl-C to stop. Add `--once` to print a single snapshot:
 
 ```bash
-python src/main.py --interactive
+bci-mcp stream --device synthetic:// --once
 ```
 
-This will display a menu-driven interface for:
-- Selecting your EEG device
-- Calibrating the system
-- Starting/stopping data streaming
-- Recording and analyzing sessions
-
-### List Available EEG Devices
-
-To see which EEG devices are connected to your system:
+## 4. Record a session
 
 ```bash
-python src/main.py --list-ports
+bci-mcp record --device synthetic:// --seconds 30 --out session.npz
 ```
 
-The output will show available serial ports and connected devices.
-
-### Recording a BCI Session
-
-To record a 60-second BCI session:
+Formats: `.npz` (default), `.csv`, `.edf` (needs `[edf]` extra). Replay with:
 
 ```bash
-python src/main.py --port /dev/tty.usbmodem1101 --record 60
+bci-mcp play session.npz
 ```
 
-Replace `/dev/tty.usbmodem1101` with your device's port as shown in the `--list-ports` output.
-
-### Calibration
-
-For optimal performance, calibrate the system before a session:
+## 5. Neurofeedback trainer
 
 ```bash
-python src/main.py --port /dev/tty.usbmodem1101 --calibrate
+bci-mcp neurofeedback --device synthetic:// --metric focus --target 0.7 --seconds 60
 ```
 
-## Starting the MCP Server
+Prints a live indicator showing whether your metric is in-zone, then a session summary.
 
-To expose your BCI functionality through the Model Context Protocol:
+## 6. Web dashboard
 
 ```bash
-python src/main.py --server
+bci-mcp dashboard
 ```
 
-By default, this starts an MCP server on `ws://localhost:8765`.
+Opens at `http://127.0.0.1:8000` — shows live band powers and metrics.
 
-## Connecting to the MCP Server
+## 7. MCP server for Claude Desktop
 
-### Using Python
-
-Here's a simple example of connecting to the MCP server using Python:
-
-```python
-import asyncio
-import json
-from websockets import connect
-
-async def use_bci_mcp():
-    async with connect("ws://localhost:8765") as websocket:
-        # Get capabilities
-        await websocket.send(json.dumps({
-            "jsonrpc": "2.0",
-            "method": "get_capabilities",
-            "id": 1
-        }))
-        response = await websocket.recv()
-        print(f"Capabilities: {json.loads(response)}")
-        
-        # Connect to a device
-        await websocket.send(json.dumps({
-            "jsonrpc": "2.0",
-            "method": "invoke_tool_connect_device",
-            "params": {"port": "/dev/tty.usbmodem1101"},
-            "id": 2
-        }))
-        response = await websocket.recv()
-        print(f"Connection result: {json.loads(response)}")
-        
-        # Start streaming
-        await websocket.send(json.dumps({
-            "jsonrpc": "2.0",
-            "method": "invoke_tool_start_stream",
-            "id": 3
-        }))
-        response = await websocket.recv()
-        print(f"Streaming result: {json.loads(response)}")
-        
-        # Read brain signals
-        for _ in range(5):  # Get 5 samples
-            await websocket.send(json.dumps({
-                "jsonrpc": "2.0",
-                "method": "get_resource_brain_signals",
-                "id": 4
-            }))
-            response = await websocket.recv()
-            print(f"Brain signals: {json.loads(response)}")
-            await asyncio.sleep(1)
-        
-        # Stop streaming
-        await websocket.send(json.dumps({
-            "jsonrpc": "2.0",
-            "method": "invoke_tool_stop_stream",
-            "id": 5
-        }))
-        response = await websocket.recv()
-        print(f"Stop result: {json.loads(response)}")
-
-asyncio.run(use_bci_mcp())
+```bash
+bci-mcp serve
 ```
 
-### Using Other Languages
+Or point Claude Desktop at it in `claude_desktop_config.json`:
 
-The MCP protocol uses standard WebSockets and JSON-RPC 2.0, so you can connect using any language that supports these technologies. See the [MCP specification](https://spec.modelcontextprotocol.io/) for detailed protocol information.
-
-## Common Operations
-
-Here are some common operations you might want to perform:
-
-### Calibrate the Device
-
-```python
-await websocket.send(json.dumps({
-    "jsonrpc": "2.0",
-    "method": "invoke_tool_calibrate_device",
-    "params": {"duration": 10},
-    "id": 10
-}))
+```json
+{
+  "mcpServers": {
+    "bci-mcp": {
+      "command": "bci-mcp",
+      "args": ["serve"]
+    }
+  }
+}
 ```
 
-### Save Session Data
+Then ask Claude: *"Connect to the synthetic brain and tell me my current focus level."*
 
-```python
-await websocket.send(json.dumps({
-    "jsonrpc": "2.0",
-    "method": "invoke_tool_save_data",
-    "params": {"format": "npz"},
-    "id": 11
-}))
-```
+## Available CLI commands
 
-### Get Session Information
-
-```python
-await websocket.send(json.dumps({
-    "jsonrpc": "2.0",
-    "method": "get_resource_session_info",
-    "id": 12
-}))
-```
-
-## Next Steps
-
-Now that you have BCI-MCP up and running, you might want to:
-
-1. Learn about [advanced BCI features](../features/bci-features.md)
-2. Explore the [MCP integration](../features/mcp-integration.md) in more detail
-3. Check the [API reference](../api/bci-module.md) for programmatic usage
-
-If you encounter any issues, please check the troubleshooting section or submit an issue on our GitHub repository.
+| Command | Description |
+|---|---|
+| `bci-mcp devices` | List registered URI schemes and discovered devices |
+| `bci-mcp stream` | Live terminal brain-meter (Ctrl-C to quit) |
+| `bci-mcp record` | Record a session to file |
+| `bci-mcp play` | Replay a recording |
+| `bci-mcp neurofeedback` | Run a neurofeedback session |
+| `bci-mcp dashboard` | Launch FastAPI web dashboard |
+| `bci-mcp serve` | Start the MCP server (stdio, for Claude Desktop) |

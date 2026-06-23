@@ -1,90 +1,69 @@
-# Brain-Computer Interface with Model Context Protocol
+# 🧠 BCI-MCP — Plug your brain into any AI
 
-Welcome to the documentation for BCI-MCP, an integration of Brain-Computer Interface (BCI) technology with the Model Context Protocol (MCP) for advanced neural signal acquisition, processing, and AI-enabled interactions.
+> A real [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server that streams live EEG brain state — focus, calm, attention — from *any* EEG device (or a built-in synthetic brain) straight into Claude and any MCP client.
 
-## Overview
+**BCI-MCP** is a brain–computer interface (BCI) toolkit and a genuine **Model Context Protocol server**. It reads an EEG signal from hardware or a built-in synthetic brain, turns it into real-time cognitive metrics, and exposes them to AI assistants like **Claude Desktop** via MCP tools and resources.
 
-BCI-MCP combines the power of:
+## Any EEG device
 
-- **Brain-Computer Interface (BCI)**: Real-time acquisition and processing of neural signals
-- **Model Context Protocol (MCP)**: Standardized AI communication interface 
+| Device | URI | Install |
+|---|---|---|
+| **Synthetic** (no hardware) | `synthetic://` | core |
+| **NeuroFocus v4** (USB serial) | `neurofocus://serial//dev/tty.usbmodemXXXX` | `[devices]` |
+| **NeuroFocus v4** (BLE) | `neurofocus://ble/NEUROFOCUS_V4_01` | `[devices]` |
+| **OpenBCI** Cyton/Ganglion | `brainflow://cyton?serial_port=/dev/ttyUSB0` | `[devices]` |
+| **Muse** 2 / S | `brainflow://muse_s` | `[devices]` |
+| **Any LSL stream** | `lsl://YourStreamName` | `[lsl]` |
+| **Generic serial** (1 int/line) | `serial:///dev/ttyACM0` | `[devices]` |
+| **Recording replay** | `playback://session.npz` | core |
 
-This integration enables a wide range of advanced applications in healthcare, accessibility, research, and human-computer interaction.
+## Quickstart
 
-## Key Features
+```bash
+git clone https://github.com/enkhbold470/bci-mcp.git
+cd bci-mcp
+pip install -e ".[all]"
 
-### BCI Core Features
+bci-mcp devices                       # list connectable devices/URIs
+bci-mcp stream --device synthetic://  # live terminal brain-meter (no hardware)
+bci-mcp dashboard                     # live web dashboard at http://127.0.0.1:8000
+```
 
-- **Neural Signal Acquisition**: Capture electrical signals from brain activity in real-time
-- **Signal Processing**: Preprocess, extract features, and classify brain signals
-- **Command Generation**: Convert interpreted brain signals into commands
-- **Feedback Mechanisms**: Provide feedback to help users improve control
-- **Real-time Operation**: Process brain activity with minimal delay
+## Claude Desktop config
 
-### MCP Integration Features
-
-- **Standardized Context Sharing**: Connect BCI data with AI models using MCP
-- **Tool Exposure**: Make BCI functions available to AI applications
-- **Composable Workflows**: Build complex operations combining BCI signals and AI processing
-- **Secure Data Exchange**: Enable privacy-preserving neural data transmission
-
-## Advanced Applications
-
-The BCI-MCP integration enables a range of cutting-edge applications:
-
-### Healthcare and Accessibility
-
-- **Assistive Technology**: Enable individuals with mobility impairments to control devices
-- **Rehabilitation**: Support neurological rehabilitation with real-time feedback
-- **Diagnostic Tools**: Aid in diagnosing neurological conditions
-
-### Research and Development
-
-- **Neuroscience Research**: Facilitate studies of brain function and cognition
-- **BCI Training**: Accelerate learning and adaptation to BCI control
-- **Protocol Development**: Establish standards for neural data exchange
-
-### AI-Enhanced Interfaces
-
-- **Adaptive Interfaces**: Interfaces that adjust based on neural signals and AI assistance
-- **Intent Recognition**: Better understanding of user intent through neural signals
-- **Augmentative Communication**: Enhanced communication for individuals with speech disabilities
-
-## Getting Started
-
-To start using BCI-MCP, check out our [Quick Start Guide](getting-started/quick-start.md).
+```json
+{
+  "mcpServers": {
+    "bci-mcp": {
+      "command": "bci-mcp",
+      "args": ["serve"]
+    }
+  }
+}
+```
 
 ## Architecture
 
-The BCI-MCP system consists of several key components:
-
 ```
-┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│                 │      │                 │      │                 │
-│  BCI Hardware   │──────│  BCI Software   │──────│   MCP Server    │
-│                 │      │                 │      │                 │
-└─────────────────┘      └─────────────────┘      └────────┬────────┘
-                                                           │
-                                                           │
-                                                  ┌────────▼────────┐
-                                                  │                 │
-                                                  │  AI Applications │
-                                                  │                 │
-                                                  └─────────────────┘
+EEG device ─► Device (synthetic │ neurofocus │ brainflow │ lsl │ serial │ playback)
+                 │  Chunk (channels × samples, µV)
+                 ▼
+              Stream ──► RingBuffer ──► consumers
+                 ▼
+            DSP Pipeline  (bandpass/notch → Welch band powers → metrics → quality)
+                 │  BrainState (focus, calm, attention, …, signal quality)
+                 ├──► CLI brain-meter / web dashboard
+                 ├──► neurofeedback trainer
+                 ├──► recorder (CSV / npz / EDF)  ◄──► PlaybackDevice
+                 ├──► LSL publisher
+                 └──► MCP server (FastMCP, stdio)  ──►  Claude / any MCP client
 ```
 
-## Documentation Status
+## Links
 
-This documentation is automatically built and deployed using GitHub Actions when changes are made to the main branch.
-
-## Contributing
-
-We welcome contributions from the community! Check out our [Contributing Guide](contributing.md) to learn how you can help.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file in the repository for details.
-
-## New Update (2025-03-23)
-
-This is a test update to trigger the documentation workflow. The documentation should be automatically deployed to GitHub Pages.
+- [Installation](getting-started/installation.md)
+- [Quick Start](getting-started/quick-start.md)
+- [Configuration](getting-started/configuration.md)
+- [MCP Integration](features/mcp-integration.md)
+- [API Reference](api/bci-module.md)
+- [GitHub](https://github.com/enkhbold470/bci-mcp)

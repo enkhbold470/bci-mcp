@@ -1,96 +1,82 @@
 # Configuration
 
-This guide explains how to configure the BCI-MCP system for your specific needs.
+BCI-MCP is configured primarily through **device URIs** passed to the CLI or MCP tools. There is no config file — every option is a flag or query parameter.
 
-## Configuration Files
+## Device URIs
 
-BCI-MCP uses several configuration files:
+All device backends are selected via a URI string:
 
-- `config.yaml`: Main configuration file for the system
-- `.env`: Environment variables for Docker and sensitive settings
-- `mkdocs.yml`: Documentation site configuration
+| Backend | URI format | Notes |
+|---|---|---|
+| Synthetic | `synthetic://` | No hardware; `?focus=0.7&seed=1&channels=4` |
+| NeuroFocus (serial) | `neurofocus://serial//dev/tty.usbmodemXXXX` | USB serial |
+| NeuroFocus (BLE) | `neurofocus://ble/NEUROFOCUS_V4_01` | BLE name |
+| BrainFlow (OpenBCI Cyton) | `brainflow://cyton?serial_port=/dev/ttyUSB0` | |
+| BrainFlow (Muse S) | `brainflow://muse_s` | BLE, no extra params |
+| LSL | `lsl://YourStreamName` | Any LSL-compatible device |
+| Generic serial | `serial:///dev/ttyACM0` | 1 integer per line at baud 115200 |
+| Playback | `playback://session.npz` | `?loop=true` to loop |
 
-## Basic Configuration
+### Synthetic device query params
 
-### config.yaml
+| Param | Default | Description |
+|---|---|---|
+| `focus` | `0.5` | 0..1 — controls alpha/beta mix (0 = high alpha, 1 = high beta) |
+| `channels` | `4` | Number of EEG channels |
+| `sample_rate` | `256.0` | Hz |
+| `seed` | random | RNG seed for reproducible output |
 
-The main configuration file supports the following settings:
-
-```yaml
-# Basic settings
-application:
-  name: "BCI-MCP"
-  version: "1.0.0"
-  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
-
-# BCI device configuration
-bci:
-  device_type: "openBCI"  # openBCI, emotiv, neurosky, etc.
-  sampling_rate: 250  # Hz
-  channels: 8  # Number of EEG channels
-  port: "/dev/ttyUSB0"  # Serial port or device path
-
-# MCP settings
-mcp:
-  api_endpoint: "https://api.example.com/mcp"
-  api_key: "${MCP_API_KEY}"  # Loaded from .env file
-  model: "default"
-  timeout: 30  # seconds
-```
-
-### Environment Variables (.env)
-
-Create a `.env` file in the root directory with your sensitive configuration:
-
-```
-MCP_API_KEY=your_api_key_here
-DATABASE_URL=postgresql://user:password@localhost/bci_mcp
-```
-
-## Advanced Configuration
-
-### Signal Processing
-
-Configure signal processing in the `config.yaml` file:
-
-```yaml
-signal_processing:
-  filters:
-    - type: "bandpass"
-      low_cutoff: 1  # Hz
-      high_cutoff: 50  # Hz
-    - type: "notch"
-      frequency: 60  # Hz
-  
-  features:
-    - type: "power_spectral_density"
-      enabled: true
-    - type: "time_domain"
-      enabled: true
-```
-
-### Model Context Protocol (MCP)
-
-Configure MCP settings for advanced usage:
-
-```yaml
-mcp_advanced:
-  context_window: 5000  # tokens
-  temperature: 0.7
-  max_tokens: 2000
-  stream_response: true
-```
-
-## Configuration Validation
-
-To validate your configuration:
+Example:
 
 ```bash
-python src/utils/validate_config.py
+bci-mcp stream --device "synthetic://?focus=0.8&channels=8&seed=42"
 ```
 
-This will check your configuration files for errors and provide recommendations.
+## DSP configuration
 
-## Next Steps
+The DSP pipeline (`Pipeline`) accepts:
 
-After configuring your BCI-MCP system, proceed to [BCI Features](../features/bci-features.md) to learn about the available features. 
+| Parameter | Default | CLI flag | Description |
+|---|---|---|---|
+| `window_seconds` | `1.0` | — | Welch window length in seconds |
+| `notch_freq` | `60.0` Hz | — | Notch filter frequency (50 Hz for Europe) |
+
+These are not yet exposed as CLI flags — edit `Pipeline(device, notch_freq=50.0)` in Python if you need to override.
+
+## Calibration
+
+Run a baseline calibration so metrics are normalized to your personal baseline:
+
+```bash
+# Via CLI (after connecting manually in Python, or via MCP tool)
+```
+
+Via MCP tool:
+
+```json
+{ "tool": "calibrate", "params": { "seconds": 20, "condition": "relax" } }
+```
+
+Or in Python:
+
+```python
+from bci_mcp.pipeline import Pipeline
+pipe = Pipeline("synthetic://")
+pipe.start()
+pipe.calibrate(seconds=20)  # sit still and relax during this window
+```
+
+## Claude Desktop config
+
+```json
+{
+  "mcpServers": {
+    "bci-mcp": {
+      "command": "bci-mcp",
+      "args": ["serve"]
+    }
+  }
+}
+```
+
+`bci-mcp serve` uses stdio transport (the standard for Claude Desktop integration).

@@ -1,66 +1,36 @@
 # Installation
 
-This guide will help you set up the BCI-MCP system on your machine.
+**Python 3.10+** is required. No hardware is needed for the core install — the synthetic device and recording playback work out of the box.
 
-## Prerequisites
+## Core install (synthetic + MCP + CLI)
 
-Before installing the BCI-MCP system, ensure you have the following prerequisites:
+```bash
+git clone https://github.com/enkhbold470/bci-mcp.git
+cd bci-mcp
+pip install -e "."
+```
 
-- Python 3.8 or higher
-- Git
-- Docker and Docker Compose (for containerized deployment)
-- 4GB RAM minimum (8GB recommended)
+This installs: `numpy`, `scipy`, `mcp` (official MCP Python SDK), `typer`, `rich`.
 
-## Installation Methods
+## Install extras
 
-You can install BCI-MCP using one of the following methods:
+| Extra | What it adds | Command |
+|---|---|---|
+| `devices` | BrainFlow (OpenBCI, Muse), bleak (BLE), pyserial | `pip install -e ".[devices]"` |
+| `lsl` | pylsl — consume and publish Lab Streaming Layer streams | `pip install -e ".[lsl]"` |
+| `edf` | pyedflib — record/load EDF files | `pip install -e ".[edf]"` |
+| `dashboard` | FastAPI + uvicorn — live web dashboard | `pip install -e ".[dashboard]"` |
+| `dev` | pytest, ruff, pytest-cov | `pip install -e ".[dev]"` |
+| `all` | Everything above | `pip install -e ".[all]"` |
 
-### Method 1: Direct Installation
+## Verify
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/enkhbold470/bci-mcp.git
-   cd bci-mcp
-   ```
-
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   # On Windows
-   venv\Scripts\activate
-   # On macOS/Linux
-   source venv/bin/activate
-   ```
-
-3. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-### Method 2: Docker Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/enkhbold470/bci-mcp.git
-   cd bci-mcp
-   ```
-
-2. Build and run the Docker containers:
-   ```bash
-   docker-compose up -d
-   ```
-
-## Verifying Installation
-
-To verify that the installation was successful:
-
-1. Run the built-in test script:
-   ```bash
-   python src/test_installation.py
-   ```
-
-2. Check for the success message indicating that all components are installed correctly.
+```bash
+bci-mcp --help
+bci-mcp devices
+bci-mcp stream --device synthetic:// --once
+```
 
 ## Next Steps
 
-After successfully installing BCI-MCP, proceed to the [Quick Start](quick-start.md) guide to begin using the system. 
+See [Quick Start](quick-start.md) for the first demo.
