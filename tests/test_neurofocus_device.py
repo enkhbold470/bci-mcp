@@ -69,7 +69,7 @@ def test_ble_transport_requires_bleak_lazily():
 
 
 def test_ble_connect_surfaces_not_found(monkeypatch):
-    import bleak
+    bleak = pytest.importorskip("bleak")
 
     async def _fake_find(name, *args, **kwargs):
         return None
