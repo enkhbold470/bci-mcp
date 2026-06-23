@@ -68,3 +68,18 @@ class Pipeline:
         if samples:
             self.calibration = Calibration.from_samples(samples)
         return self.calibration
+
+    def record(self, seconds: float, path: str, fmt: str | None = None) -> str:
+        from .recording.recorder import Recorder
+        from .recording.writer import save_recording
+
+        recorder = Recorder()
+        self.stream.add_consumer(recorder)
+        recorder.start()
+        time.sleep(seconds)
+        recorder.stop()
+        data = recorder.data()
+        return save_recording(
+            data, self.device.info.sample_rate, self.device.info.channel_names, path, fmt,
+            metadata={"device": self.device.info.name, "uri": self.device.info.uri},
+        )
