@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import math
+import warnings
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -37,6 +38,8 @@ class Calibration:
 
     @classmethod
     def from_samples(cls, raw_list: list[dict[str, float]]) -> Calibration:
+        if not raw_list:
+            raise ValueError("from_samples requires at least one sample")
         keys = raw_list[0].keys()
         baseline = {
             k: {
@@ -45,4 +48,10 @@ class Calibration:
             }
             for k in keys
         }
+        for k, stats in baseline.items():
+            if stats["std"] == 0.0:
+                warnings.warn(
+                    f"Calibration std=0 for '{k}'; baseline may be degenerate",
+                    stacklevel=2,
+                )
         return cls(baseline=baseline)

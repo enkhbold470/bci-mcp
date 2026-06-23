@@ -1,3 +1,5 @@
+import pytest
+
 from bci_mcp.dsp.calibration import Calibration
 
 
@@ -20,3 +22,8 @@ def test_json_roundtrip():
     cal = Calibration.from_samples([{"focus": 0.5}, {"focus": 1.5}])
     restored = Calibration.from_json(cal.to_json())
     assert restored.baseline == cal.baseline
+
+
+def test_from_samples_empty_raises():
+    with pytest.raises(ValueError):
+        Calibration.from_samples([])
