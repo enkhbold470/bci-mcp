@@ -1,6 +1,7 @@
 import time
 
 import numpy as np
+import pytest
 
 from bci_mcp.core.registry import create_device
 from bci_mcp.devices.neurofocus import NeuroFocusDevice
@@ -65,3 +66,17 @@ def test_ble_transport_requires_bleak_lazily():
     # Constructing a BLE device must NOT require bleak; connecting may.
     dev = NeuroFocusDevice(transport="ble", ble_name="NEUROFOCUS_V4_01")
     assert dev.transport == "ble"
+
+
+def test_ble_connect_surfaces_not_found(monkeypatch):
+    import bleak
+
+    async def _fake_find(name, *args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        bleak.BleakScanner, "find_device_by_name", staticmethod(_fake_find)
+    )
+    dev = NeuroFocusDevice(transport="ble", ble_name="DOES_NOT_EXIST")
+    with pytest.raises(RuntimeError):
+        dev.connect()
