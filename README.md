@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="docs/assets/hero.svg" alt="BCI-MCP — stream live EEG brain state into Claude over the Model Context Protocol" width="100%">
+<img src="docs/assets/hero.svg" alt="BCI-MCP streams live EEG brain state into Claude over MCP" width="100%">
 
 # BCI-MCP
 
-**Stream live EEG brain state — focus, calm, attention — into Claude and any MCP client. Works with no EEG hardware.**
+**Ask Claude about your brain. Focus, calm, attention. Works without a headset.**
 
-Open-source [Model Context Protocol](https://modelcontextprotocol.io) server for brain-computer interface (BCI) data, for developers and neurotech tinkerers who want their AI assistant to read real-time brainwaves.
+Real [Model Context Protocol](https://modelcontextprotocol.io) server for EEG. Python on the backend. Plug into Claude Desktop, Claude Code, or Cursor.
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/enkhbold470/bci-mcp)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://enkhbold470.github.io/bci-mcp/)
@@ -33,75 +33,54 @@ $ bci-mcp stream --device synthetic://
 
 ## Contents
 
-- [What it is](#what-it-is)
-- [Quickstart (30 seconds)](#quickstart-30-seconds)
-- [Install in one line](#install-in-one-line)
-- [Any EEG device](#any-eeg-device)
-- [Use it from Claude Desktop](#use-it-from-claude-desktop)
-- [Use it from Claude Code](#use-it-from-claude-code)
-- [MCP tools, resources, and prompt](#mcp-tools-resources-and-prompt)
-- [What you get](#what-you-get)
-- [Architecture](#architecture)
-- [Install options](#install-options)
-- [Use cases](#use-cases)
-- [Why it exists](#why-it-exists)
-- [Documentation](#documentation)
-- [A note on accuracy](#a-note-on-accuracy)
-- [Disclaimer](#disclaimer)
+- [What this is](#what-this-is)
+- [Try it in one line](#try-it-in-one-line)
+- [Quickstart from source](#quickstart-from-source)
+- [Devices](#devices)
+- [Talk to Claude](#talk-to-claude)
+- [MCP tools](#mcp-tools)
+- [What's in the box](#whats-in-the-box)
+- [How it fits together](#how-it-fits-together)
+- [Install extras](#install-extras)
+- [Docs and accuracy](#docs-and-accuracy)
 - [Contributing](#contributing)
-- [License](#license)
 
-## What it is
+## What this is
 
-BCI-MCP is a small brain-computer interface toolkit built around one idea: read an EEG signal, turn it into a few honest real-time metrics, and make those available to an AI assistant through the Model Context Protocol.
+You have an EEG signal. This turns it into numbers Claude can read: focus, calm, attention, band powers, signal quality. Basically a small brain-computer interface server that stays out of your way.
 
-The signal can come from an [OpenBCI](https://openbci.com) board, a [Muse](https://choosemuse.com) headband, a NeuroFocus device, any [Lab Streaming Layer (LSL)](https://labstreaminglayer.org) stream, a generic serial sensor, a recorded session, or a built-in synthetic generator that needs no hardware at all. Same code path for every source — so you can run the entire stack, including the live MCP server, before you own a headset.
+No headset yet? Use the built-in fake brain (`synthetic://`). Same code path as real hardware. You can test the whole MCP stack before you buy anything.
 
-## Quickstart (30 seconds)
+Sources that work today:
 
-```bash
-pip install -e ".[all]"               # from a clone; "." alone gives core synthetic + MCP + CLI
+- Synthetic demo (no hardware)
+- [OpenBCI](https://openbci.com), [Muse](https://choosemuse.com) via BrainFlow
+- NeuroFocus (serial or BLE)
+- [LSL](https://labstreaminglayer.org) streams
+- Generic serial
+- Recorded sessions (replay from file)
 
-bci-mcp stream --device synthetic://  # live terminal brain-meter, no hardware
-bci-mcp dashboard                     # web dashboard at http://127.0.0.1:8000
-```
+## Try it in one line
 
-That's it — you now have a running EEG brain-meter and a live MCP server, with zero hardware.
-
-Record a session and replay it later:
-
-```bash
-bci-mcp record --device synthetic:// --seconds 30 --out session.npz
-bci-mcp play session.npz
-```
-
-Run a neurofeedback session that nudges a single metric toward a target:
-
-```bash
-bci-mcp neurofeedback --device synthetic:// --metric focus --target 0.7
-```
-
-## Install in one line
-
-**Claude Code** (needs [Claude Code](https://code.claude.com/docs/en/mcp) + Node or uv):
+**Claude Code**
 
 ```bash
 claude mcp add bci-mcp -- npx -y bci-mcp
 ```
 
-No Node? Python-only:
+No Node? Use Python:
 
 ```bash
 claude mcp add bci-mcp -- uvx bci-mcp serve
 ```
 
-**Fully automatic** (picks npx → uvx → pip for you):
+Or let the install script pick for you:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/scripts/install-mcp.sh | bash
 ```
 
-**Claude Desktop** — Settings → Developer → Edit Config:
+**Claude Desktop** (Settings → Developer → Edit Config):
 
 ```json
 {
@@ -114,36 +93,71 @@ curl -fsSL https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/scripts/in
 }
 ```
 
-**Cursor** — add to `~/.cursor/mcp.json` under `mcpServers`:
+**Cursor** (`~/.cursor/mcp.json`, under `mcpServers`):
 
 ```json
 "bci-mcp": { "command": "npx", "args": ["-y", "bci-mcp"] }
 ```
 
-Then ask Claude: *“Connect to the demo brain — what’s my focus?”* No headset required.
+Then ask something like: *Connect to the demo brain. What's my focus right now?*
 
-> PyPI: `pip install bci-mcp` · npm launcher: `npx -y bci-mcp` (see `npm/bci-mcp` to publish)
+Published packages: `pip install bci-mcp` ([PyPI](https://pypi.org/project/bci-mcp/)) and `npx -y bci-mcp` ([npm](https://www.npmjs.com/package/bci-mcp)).
 
-## Any EEG device
+## Quickstart from source
 
-One URI registry, one interface, every source:
+Cloning the repo:
 
-| Device | URI | Install |
+```bash
+git clone https://github.com/enkhbold470/bci-mcp.git
+cd bci-mcp
+pip install -e ".[all,dev]"
+
+bci-mcp stream --device synthetic://
+bci-mcp dashboard   # http://127.0.0.1:8000
+```
+
+Record and replay:
+
+```bash
+bci-mcp record --device synthetic:// --seconds 30 --out session.npz
+bci-mcp play session.npz
+```
+
+Neurofeedback on one metric:
+
+```bash
+bci-mcp neurofeedback --device synthetic:// --metric focus --target 0.7
+```
+
+## Devices
+
+One URI scheme for everything:
+
+| Device | URI | Extra install |
 |---|---|---|
 | Synthetic (no hardware) | `synthetic://` | core |
-| NeuroFocus v4 (USB serial) | `neurofocus://serial/<port>` | `[devices]` |
+| NeuroFocus v4 (USB) | `neurofocus://serial/<port>` | `[devices]` |
 | NeuroFocus v4 (BLE) | `neurofocus://ble/<name>` | `[devices]` |
 | OpenBCI Cyton / Ganglion | `brainflow://cyton?serial_port=<port>` | `[devices]` |
-| Muse 2 / S (via BrainFlow) | `brainflow://muse_s` | `[devices]` |
+| Muse 2 / S | `brainflow://muse_s` | `[devices]` |
 | Any LSL stream | `lsl://<name>` | `[lsl]` |
-| Generic serial (1 int/line) | `serial://<port>` | `[devices]` |
+| Generic serial | `serial://<port>` | `[devices]` |
 | Recording replay | `playback://<file>` | core |
 
-NeuroFocus v4 is supported over both serial and BLE, using the device's exact firmware UUIDs and counts-to-microvolt scaling.
+## Talk to Claude
 
-## Use it from Claude Desktop
+Example after MCP is connected:
 
-Add this to your Claude Desktop MCP config (`claude_desktop_config.json`):
+```
+You:    What's my focus level?
+Claude: (calls get_brain_state) Focus 0.71, calm 0.32, attention 0.86. Signal looks good.
+
+You:    Run 60 seconds of neurofeedback on calm and tell me how I did.
+Claude: (calls start_neurofeedback, then get_neurofeedback_score)
+        Mean calm 0.58, time in target 41%, best streak 9s.
+```
+
+If you installed with `pip install bci-mcp` and want the binary directly in Desktop config:
 
 ```json
 {
@@ -156,60 +170,30 @@ Add this to your Claude Desktop MCP config (`claude_desktop_config.json`):
 }
 ```
 
-Restart Claude Desktop, then talk to your brain data in plain language. An example exchange:
+Restart Claude after editing config. Check `/mcp` in Claude Code or the plug icon in Desktop.
 
-```
-You:    What's my current focus level?
-Claude: (calls get_brain_state) -> Your focus is 0.71 and rising, calm is
-        0.32, attention 0.86, signal quality GOOD. You look engaged and alert.
+## MCP tools
 
-You:    Run a 60-second neurofeedback session targeting calm and tell me how I did.
-Claude: (calls start_neurofeedback, then get_neurofeedback_score)
-        -> Session done. Mean calm 0.58, time-in-target 41%, best streak 9s.
-```
+Stdio server built with FastMCP (official MCP Python SDK).
 
-The synthetic device means this works the moment you install — no headset required to wire up and test the MCP integration.
+**Tools:** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `calibrate`, `record`, `start_neurofeedback`, `get_neurofeedback_score`, `mark_event`, `stream_summary`
 
-## Use it from Claude Code
+**Resources:** `brain://state`, `brain://device`
 
-```bash
-claude mcp add bci-mcp -- npx -y bci-mcp
-```
+**Prompt:** `interpret_brain_state`
 
-Python only (no Node):
+## What's in the box
 
-```bash
-claude mcp add bci-mcp -- uvx bci-mcp serve
-```
-
-If you already ran `pip install bci-mcp`:
-
-```bash
-claude mcp add bci-mcp -- bci-mcp serve
-```
-
-Check it connected with `claude mcp list` or `/mcp` inside a session. Share with the team via `.mcp.json` using `--scope project`.
-
-## MCP tools, resources, and prompt
-
-Built on the official MCP Python SDK (FastMCP) over stdio.
-
-- **Tools:** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `calibrate`, `record`, `start_neurofeedback`, `get_neurofeedback_score`, `mark_event`, `stream_summary`
-- **Resources:** `brain://state`, `brain://device`
-- **Prompt:** `interpret_brain_state`
-
-## What you get
-
-| Area | What's included |
+| Part | What it does |
 |---|---|
-| Device layer | One URI registry across synthetic, NeuroFocus (serial + BLE), OpenBCI and Muse via BrainFlow, LSL, generic serial, and recording playback |
-| MCP server | Real server on the official MCP SDK (FastMCP), stdio transport, drops straight into Claude Desktop |
-| DSP pipeline | Bandpass + notch filtering, Welch band powers (delta / theta / alpha / beta / gamma), derived metrics (focus, calm, attention, engagement, fatigue, meditation), signal-quality and artifact checks, optional per-person calibration |
-| CLI (`bci-mcp`) | `devices`, `stream`, `record`, `play`, `neurofeedback`, `dashboard`, `serve` |
-| Tooling | Terminal brain-meter, FastAPI web dashboard, neurofeedback trainer, session recording (CSV / npz / EDF) with replay, LSL publisher |
-| Quality | 81 hardware-free tests (synthetic device, playback, in-process LSL, BrainFlow synthetic board), ruff clean, CI on Python 3.10-3.12, MIT licensed |
+| Devices | URI registry: synthetic, NeuroFocus, BrainFlow (OpenBCI/Muse), LSL, serial, playback |
+| MCP server | FastMCP over stdio. Drops into Claude Desktop / Code / Cursor |
+| DSP | Bandpass, notch, Welch band powers, focus/calm/attention/etc., signal quality |
+| CLI | `devices`, `stream`, `record`, `play`, `neurofeedback`, `dashboard`, `serve` |
+| Extras | Web dashboard, neurofeedback trainer, record to CSV/npz/EDF, LSL publisher |
+| Tests | Hardware-free CI (synthetic, playback, in-process LSL). Python 3.10–3.12 |
 
-## Architecture
+## How it fits together
 
 ```
 EEG device -> Device (synthetic | neurofocus | brainflow | lsl | serial | playback)
@@ -217,75 +201,41 @@ EEG device -> Device (synthetic | neurofocus | brainflow | lsl | serial | playba
                  v
               Stream --> RingBuffer --> consumers
                  v
-            DSP Pipeline  (bandpass/notch -> Welch band powers -> metrics -> quality)
-                 |  BrainState (focus, calm, attention, ..., signal quality)
-                 +--> CLI brain-meter / web dashboard
-                 +--> neurofeedback trainer
-                 +--> recorder (CSV / npz / EDF)  <-->  PlaybackDevice
-                 +--> LSL publisher
-                 +--> MCP server (FastMCP, stdio)  -->  Claude / any MCP client
+            DSP Pipeline  (filter -> band powers -> metrics -> quality)
+                 |  BrainState
+                 +--> CLI / dashboard / neurofeedback / recorder / LSL
+                 +--> MCP server  -->  Claude (or any MCP client)
 ```
 
-## Install options
+## Install extras
+
+From a clone:
 
 ```bash
-pip install -e "."              # core: numpy, scipy, mcp, typer, rich (synthetic + MCP + CLI)
-pip install -e ".[devices]"     # + brainflow, bleak, pyserial (OpenBCI, Muse, NeuroFocus, serial)
-pip install -e ".[lsl]"         # + pylsl (consume / publish Lab Streaming Layer)
-pip install -e ".[edf]"         # + pyedflib (EDF recording)
-pip install -e ".[dashboard]"   # + fastapi, uvicorn (web dashboard)
-pip install -e ".[all]"         # everything
+pip install -e "."              # core only (synthetic + MCP + CLI)
+pip install -e ".[devices]"     # OpenBCI, Muse, NeuroFocus, serial
+pip install -e ".[lsl]"         # Lab Streaming Layer
+pip install -e ".[edf]"         # EDF files
+pip install -e ".[dashboard]"   # web UI
+pip install -e ".[all]"         # everything above
 ```
 
-## Use cases
+From PyPI: `pip install bci-mcp` (core) or install extras the same way with the package name instead of `-e ".[...]"`.
 
-- Give Claude live context about your focus, calm, or fatigue while you work or study.
-- Build neurofeedback experiments without writing your own DSP or device drivers.
-- Prototype an EEG / BCI app against the synthetic device, then swap in real hardware via a URI change.
-- Record EEG sessions to CSV / npz / EDF and replay them deterministically in tests or demos.
-- Publish a processed brain state over LSL for other lab tools to consume.
-- Teach signal processing and brain-computer interface concepts with a runnable, hardware-free stack.
+## Docs and accuracy
 
-## Why it exists
+Docs: [enkhbold470.github.io/bci-mcp](https://enkhbold470.github.io/bci-mcp/)
 
-Most EEG tooling assumes you already own a specific headset and want raw samples or a heavy GUI. BCI-MCP takes a narrower, more practical position:
+Questions about the code: [DeepWiki](https://deepwiki.com/enkhbold470/bci-mcp). Agents: [`llms.txt`](https://enkhbold470.github.io/bci-mcp/llms.txt).
 
-- **Hardware-optional.** The synthetic device runs the full pipeline and a real MCP server with nothing plugged in. Most BCI projects can't be tried until hardware arrives.
-- **Device-agnostic by URI.** OpenBCI, Muse, NeuroFocus, LSL, serial, and playback all share one interface, instead of one SDK per vendor.
-- **Built for AI assistants.** The output is an MCP server, not just a plotting window — so any MCP client, Claude included, can read and act on brain state.
-- **Honest, readable metrics.** Plain band-power ratios documented in the source, not opaque "scores."
+**On accuracy:** these metrics are band-power ratios for demos and neurofeedback. Not clinical. Not diagnosis. Each formula is in the source if you want to check the math.
 
-## Documentation
-
-Full docs: **https://enkhbold470.github.io/bci-mcp/** (MkDocs, shadcn theme)
-
-For AI Q&A about the codebase, use [DeepWiki](https://deepwiki.com/enkhbold470/bci-mcp). Agents can also read [`llms.txt`](https://enkhbold470.github.io/bci-mcp/llms.txt) for a curated doc index.
-
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://enkhbold470.github.io/bci-mcp/)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/enkhbold470/bci-mcp)
-
-## A note on accuracy
-
-The metrics here are simple, well-understood band-power ratios, not clinical measures. They are useful for neurofeedback, demos, and experimentation, and each one is documented in the source so you can see exactly how it is computed.
-
-## Disclaimer
-
-BCI-MCP is for research, education, and personal experimentation. It is not a medical device and must not be used for diagnosis or treatment.
+**Disclaimer:** research and personal use only. Not a medical device.
 
 ## Contributing
 
-Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Good first issues are labeled [`good first issue`](https://github.com/enkhbold470/bci-mcp/labels/good%20first%20issue). Please run `ruff check src tests && pytest` before opening a PR.
+PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Run `ruff check src tests && pytest` before you open one.
 
-If this project is useful to you, a star helps others find it.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
-
-## Star history
+MIT. See [LICENSE](LICENSE).
 
 [![Star History Chart](https://api.star-history.com/svg?repos=enkhbold470/bci-mcp&type=Date)](https://star-history.com/#enkhbold470/bci-mcp&Date)
-
----
-
-<sub>Topics: EEG · BCI · brain-computer interface · Model Context Protocol · MCP · Claude · neurofeedback · OpenBCI · Muse · BrainFlow · LSL · Lab Streaming Layer · NeuroFocus · brainwave · neurotech · neuroscience · real-time signal processing · band power · alpha/beta/theta · focus tracking · Python</sub>
