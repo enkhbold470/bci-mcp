@@ -1,0 +1,70 @@
+site_name: BCI-MCP
+site_url: https://enkhbold470.github.io/bci-mcp/
+site_description: Stream live EEG brain state into Claude and any MCP client
+site_author: enkhbold470
+
+repo_name: enkhbold470/bci-mcp
+repo_url: https://github.com/enkhbold470/bci-mcp
+edit_uri: edit/main/docs/
+
+theme:
+  name: shadcn
+  show_title: true
+  show_stargazers: true
+  icon: assets/hero.svg
+  pygments_style:
+    light: shadcn-light
+    dark: github-dark
+  accent: "oklch(64.5% 0.246 16.439)"
+
+markdown_extensions:
+  - admonition
+  - footnotes
+  - attr_list
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quick-start.md
+      - Configuration: getting-started/configuration.md
+  - Features:
+      - BCI Features: features/bci-features.md
+      - MCP Integration: features/mcp-integration.md
+      - Signal Processing: features/signal-processing.md
+  - API Reference:
+      - Core & DSP: api/bci-module.md
+      - MCP & Devices: api/mcp-module.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            members: true
+            inherited_members: true
+            show_root_heading: true
+            show_signature: true
+            separate_signature: true
+            docstring_style: google
+
+hooks:
+  - hooks.py
+
+exclude_docs: |
+  superpowers/**
+  github-topics.md
+
+extra:
+  deepwiki_url: https://deepwiki.com/enkhbold470/bci-mcp
