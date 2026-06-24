@@ -39,7 +39,7 @@ bci-mcp = "bci_mcp.cli:app"
 
 [project.urls]
 Homepage = "https://github.com/enkhbold470/bci-mcp"
-Documentation = "https://deepwiki.com/enkhbold470/bci-mcp"
+Documentation = "https://enkhbold470.github.io/bci-mcp/"
 Repository = "https://github.com/enkhbold470/bci-mcp"
 
 [tool.hatch.build.targets.wheel]
