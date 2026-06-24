@@ -31,7 +31,7 @@ devices = ["brainflow>=5.10", "bleak>=0.21", "pyserial>=3.5"]
 dashboard = ["fastapi>=0.110", "uvicorn>=0.27", "websockets>=12.0"]
 lsl = ["pylsl>=1.16"]
 edf = ["pyedflib>=0.1.36"]
-dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.4"]
+dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.4", "build>=1.0"]
 docs = ["mkdocs-shadcn>=0.11", "mkdocstrings>=0.25", "mkdocstrings-python>=1.10",
         "pymdown-extensions>=10", "pygments>=2.17"]
 all = ["bci-mcp[devices,dashboard,lsl,edf]"]

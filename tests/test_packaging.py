@@ -1,5 +1,6 @@
 import shutil
 import subprocess
+import sys
 import tarfile
 from pathlib import Path
 
@@ -15,7 +16,12 @@ def test_sdist_excludes_env_file():
     if dist.exists():
         shutil.rmtree(dist)
     try:
-        subprocess.run(["uv", "build"], cwd=ROOT, check=True, capture_output=True)
+        subprocess.run(
+            [sys.executable, "-m", "build", "--sdist"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        )
         sdist = next(dist.glob("bci_mcp-*.tar.gz"))
         with tarfile.open(sdist, "r:gz") as tar:
             names = tar.getnames()
