@@ -10,12 +10,13 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+.env
+.env.*
+!.env.example
 
 # Virtual environments
 venv/
 env/
-.env
-.env/
 
 # IDE files
 .idea/

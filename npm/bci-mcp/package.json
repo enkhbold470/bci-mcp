@@ -1,6 +1,6 @@
 {
   "name": "bci-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One-line MCP launcher for bci-mcp — streams live EEG brain state into Claude (PyPI backend)",
   "license": "MIT",
   "repository": {
