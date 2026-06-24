@@ -46,12 +46,18 @@ git push origin main --tags
 
 GitHub Actions (`.github/workflows/publish.yml`) builds, verifies versions match the tag, and publishes to PyPI and npm.
 
-**Repository secrets** (Settings → Secrets → Actions):
+**PyPI** and **npm** use OIDC trusted publishing from `publish.yml` — no long-lived API tokens in GitHub secrets.
 
-| Secret | Used for |
-|--------|----------|
-| `PYPI_API_TOKEN` | `uv publish` to PyPI |
-
-**npm** uses [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers/) from the `npm` job in `publish.yml` — no long-lived `NPM_TOKEN` required once configured on npmjs.com.
+Configure trusted publishers on [pypi.org](https://pypi.org/manage/project/bci-mcp/settings/publishing/) and [npmjs.com](https://www.npmjs.com/package/bci-mcp) (see below).
 
 Optional **environments** `pypi` and `npm` in GitHub for approval gates.
+
+### PyPI trusted publisher
+
+| Field | Value |
+|-------|--------|
+| PyPI | **GitHub** |
+| Owner | `enkhbold470` |
+| Repository | `bci-mcp` |
+| Workflow | `publish.yml` |
+| Environment | `pypi` |

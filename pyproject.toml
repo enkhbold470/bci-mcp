@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bci-mcp"
-version = "0.1.0"
+version = "0.1.1"
 description = "Plug your brain into any AI — a real Model Context Protocol (MCP) server that streams live EEG brain state (focus, calm, attention) from any EEG device into Claude and any MCP client."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -46,6 +46,10 @@ Repository = "https://github.com/enkhbold470/bci-mcp"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bci_mcp"]
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src/bci_mcp", "/README.md", "/LICENSE", "/pyproject.toml"]
+exclude = ["/.env", "/.env.*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

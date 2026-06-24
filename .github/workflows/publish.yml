@@ -45,13 +45,17 @@ jobs:
     needs: verify
     runs-on: ubuntu-latest
     environment: pypi
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv build
+      - name: Ensure sdist does not ship secrets
+        run: |
+          ! tar -tzf dist/*.tar.gz | grep -E '(^|/)\.env'
       - run: uv publish dist/*
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
   npm:
     needs: verify
