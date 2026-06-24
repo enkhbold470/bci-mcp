@@ -6,8 +6,10 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def test_claude_desktop_config_valid():
     cfg = json.loads((ROOT / "examples" / "claude_desktop_config.json").read_text())
-    assert "bci-mcp" in cfg["mcpServers"]
-    assert cfg["mcpServers"]["bci-mcp"]["command"] == "bci-mcp"
+    entry = cfg["mcpServers"]["bci-mcp"]
+    assert entry["command"] in {"npx", "bci-mcp", "uvx"}
+    if entry["command"] == "npx":
+        assert "bci-mcp" in entry.get("args", [])
 
 
 def test_quickstart_is_importable_module(tmp_path):

@@ -1,0 +1,21 @@
+{
+  "name": "bci-mcp",
+  "version": "0.1.0",
+  "description": "One-line MCP launcher for bci-mcp — streams live EEG brain state into Claude (PyPI backend)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enkhbold470/bci-mcp.git",
+    "directory": "npm/bci-mcp"
+  },
+  "homepage": "https://github.com/enkhbold470/bci-mcp",
+  "keywords": ["mcp", "eeg", "bci", "brain", "claude", "model-context-protocol"],
+  "author": "enkhbold470",
+  "bugs": {
+    "url": "https://github.com/enkhbold470/bci-mcp/issues"
+  },
+  "bin": {
+    "bci-mcp": "bin.js"
+  },
+  "files": ["bin.js", "README.md"]
+}
