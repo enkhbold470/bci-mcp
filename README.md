@@ -194,9 +194,9 @@ Most EEG tooling assumes you already own a specific headset and want raw samples
 
 ## Documentation
 
-**https://enkhbold470.github.io/bci-mcp/** redirects to the live docs on DeepWiki: **https://deepwiki.com/enkhbold470/bci-mcp**
+Full docs: **https://enkhbold470.github.io/bci-mcp/** (MkDocs, shadcn theme)
 
-DeepWiki indexes the codebase and keeps the docs in step with the source, and it lets you ask questions about the project directly. Start there for setup, the device URI registry, the DSP pipeline, the MCP tool reference, and the API.
+For AI Q&A about the codebase, use [DeepWiki](https://deepwiki.com/enkhbold470/bci-mcp). Agents can also read [`llms.txt`](https://enkhbold470.github.io/bci-mcp/llms.txt) for a curated doc index.
 
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://enkhbold470.github.io/bci-mcp/)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/enkhbold470/bci-mcp)

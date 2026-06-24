@@ -1,0 +1,25 @@
+# BCI-MCP
+
+> MCP server that streams live EEG brain state (focus, calm, attention) from any EEG device into Claude and any MCP client.
+
+## Getting started
+
+- [Installation](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/getting-started/installation.md): Install with pip, optional extras for devices, dashboard, LSL, and EDF.
+- [Quick start](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/getting-started/quick-start.md): Run the synthetic device, stream metrics, record, and connect Claude Desktop in minutes.
+- [Configuration](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/getting-started/configuration.md): Device URI registry — synthetic, NeuroFocus, OpenBCI, Muse, LSL, serial, playback.
+
+## Features
+
+- [BCI features](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/features/bci-features.md): CLI commands, neurofeedback, dashboard, recording, and LSL publishing.
+- [MCP integration](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/features/mcp-integration.md): FastMCP tools, resources, prompts, and Claude Desktop setup.
+- [Signal processing](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/features/signal-processing.md): Filters, Welch band powers, metrics, calibration, and signal quality.
+
+## Reference
+
+- [Documentation site](https://enkhbold470.github.io/bci-mcp/): Human-readable docs (MkDocs).
+- [Contributing](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/contributing.md): How to run tests and open a pull request.
+- [Changelog](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/changelog.md): Release history.
+
+## Interactive
+
+- [DeepWiki](https://deepwiki.com/enkhbold470/bci-mcp): Ask questions about the codebase with AI.
