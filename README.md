@@ -9,6 +9,7 @@
 Open-source [Model Context Protocol](https://modelcontextprotocol.io) server for brain-computer interface (BCI) data, for developers and neurotech tinkerers who want their AI assistant to read real-time brainwaves.
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/enkhbold470/bci-mcp)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://enkhbold470.github.io/bci-mcp/)
 [![CI](https://github.com/enkhbold470/bci-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/enkhbold470/bci-mcp/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -193,10 +194,11 @@ Most EEG tooling assumes you already own a specific headset and want raw samples
 
 ## Documentation
 
-Full documentation lives on DeepWiki: **https://deepwiki.com/enkhbold470/bci-mcp**
+**https://enkhbold470.github.io/bci-mcp/** redirects to the live docs on DeepWiki: **https://deepwiki.com/enkhbold470/bci-mcp**
 
 DeepWiki indexes the codebase and keeps the docs in step with the source, and it lets you ask questions about the project directly. Start there for setup, the device URI registry, the DSP pipeline, the MCP tool reference, and the API.
 
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://enkhbold470.github.io/bci-mcp/)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/enkhbold470/bci-mcp)
 
 ## A note on accuracy
