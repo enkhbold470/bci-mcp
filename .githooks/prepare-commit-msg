@@ -1,0 +1,7 @@
+#!/bin/sh
+# Strip AI co-author trailers that Cursor/IDE tooling may inject.
+tmp=$(mktemp)
+sed \
+  -e '/^Co-authored-by: Cursor <cursoragent@cursor.com>$/d' \
+  -e '/^Co-authored-by: Claude /d' \
+  "$1" > "$tmp" && mv "$tmp" "$1"

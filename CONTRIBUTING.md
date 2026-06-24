@@ -6,7 +6,10 @@ Thanks for your interest! BCI-MCP is a Python project (3.10+).
 
 ```bash
 python -m pip install -e ".[all,dev]"
+git config core.hooksPath .githooks
 ```
+
+The hooks path enables `prepare-commit-msg`, which strips unwanted AI `Co-authored-by` trailers from commits. See [AGENTS.md](AGENTS.md).
 
 ## Develop
 
