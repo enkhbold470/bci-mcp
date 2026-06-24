@@ -51,6 +51,7 @@ GitHub Actions (`.github/workflows/publish.yml`) builds, verifies versions match
 | Secret | Used for |
 |--------|----------|
 | `PYPI_API_TOKEN` | `uv publish` to PyPI |
-| `NPM_TOKEN` | `npm publish` (granular token with publish + bypass 2FA) |
+
+**npm** uses [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers/) from the `npm` job in `publish.yml` — no long-lived `NPM_TOKEN` required once configured on npmjs.com.
 
 Optional **environments** `pypi` and `npm` in GitHub for approval gates.
