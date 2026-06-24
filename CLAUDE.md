@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git commits
+
+**Never add `Co-authored-by` trailers** (Cursor, Claude, or any AI). See [AGENTS.md](AGENTS.md). Verify with `git log -1 --format='%B'` before pushing.
+
 ## What this project is
 
 **BCI-MCP** is a Python package (`src/bci_mcp/`) that provides:
