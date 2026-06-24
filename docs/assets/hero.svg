@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="BCI-MCP — live EEG brain state, streamed into any AI over the Model Context Protocol">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0e14"/>
+      <stop offset="1" stop-color="#10151f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4f8cff"/>
+      <stop offset="1" stop-color="#9b6bff"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-50%" width="140%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="300" rx="16" fill="url(#bg)"/>
+  <rect x="0.5" y="0.5" width="1199" height="299" rx="16" fill="none" stroke="#222a38" stroke-width="1"/>
+
+  <!-- faint EEG traces -->
+  <path d="M0 96 Q 60 70 120 96 T 240 96 T 360 96 T 480 96 T 600 96 T 720 96 T 840 96 T 960 96 T 1080 96 T 1200 96"
+        fill="none" stroke="#2a3650" stroke-width="2" opacity="0.5"/>
+  <path d="M0 250 q 40 -30 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0"
+        fill="none" stroke="#2a3650" stroke-width="2" opacity="0.4"/>
+
+  <!-- bright EEG trace -->
+  <path filter="url(#glow)" fill="none" stroke="url(#accent)" stroke-width="3" stroke-linecap="round"
+        d="M0 200
+           L 120 200 L 150 200 L 165 130 L 180 255 L 200 200
+           L 320 200 L 350 200 L 366 120 L 384 262 L 405 200
+           L 540 200 L 575 200 L 590 140 L 606 250 L 628 200
+           L 760 200 L 800 200 L 816 110 L 834 264 L 856 200
+           L 980 200 L 1020 200 L 1036 135 L 1054 252 L 1076 200
+           L 1200 200"/>
+
+  <!-- title block -->
+  <text x="64" y="120" font-family="ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+        font-size="68" font-weight="800" letter-spacing="-2" fill="#f4f6fb">BCI-MCP</text>
+  <text x="66" y="160" font-family="ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+        font-size="23" font-weight="500" fill="#aab3c5">Live EEG brain state, streamed into any AI over the Model Context Protocol.</text>
+
+  <!-- device chips -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#cdd6e6">
+    <g transform="translate(66,196)">
+      <rect width="104" height="26" rx="13" fill="#161d2b" stroke="#2c3850"/>
+      <text x="52" y="17" text-anchor="middle">synthetic</text>
+    </g>
+    <g transform="translate(180,196)">
+      <rect width="104" height="26" rx="13" fill="#161d2b" stroke="#2c3850"/>
+      <text x="52" y="17" text-anchor="middle">OpenBCI</text>
+    </g>
+    <g transform="translate(294,196)">
+      <rect width="78" height="26" rx="13" fill="#161d2b" stroke="#2c3850"/>
+      <text x="39" y="17" text-anchor="middle">Muse</text>
+    </g>
+    <g transform="translate(382,196)">
+      <rect width="116" height="26" rx="13" fill="#161d2b" stroke="#2c3850"/>
+      <text x="58" y="17" text-anchor="middle">NeuroFocus</text>
+    </g>
+    <g transform="translate(508,196)">
+      <rect width="66" height="26" rx="13" fill="#161d2b" stroke="#2c3850"/>
+      <text x="33" y="17" text-anchor="middle">LSL</text>
+    </g>
+  </g>
+
+  <!-- claude target -->
+  <g transform="translate(980,128)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <rect x="-8" y="-26" width="172" height="44" rx="10" fill="#161d2b" stroke="url(#accent)" stroke-width="1.5"/>
+    <text x="78" y="2" text-anchor="middle" font-size="15" fill="#e6e6e6">MCP -&gt; Claude</text>
+    <text x="78" y="-12" text-anchor="middle" font-size="10" fill="#8a93a6" opacity="0">.</text>
+  </g>
+</svg>
