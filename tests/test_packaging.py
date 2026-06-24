@@ -19,7 +19,12 @@ def test_sdist_excludes_env_file():
         sdist = next(dist.glob("bci_mcp-*.tar.gz"))
         with tarfile.open(sdist, "r:gz") as tar:
             names = tar.getnames()
-        assert not any(part.endswith(".env") or part == ".env" for name in names for part in [name, name.split("/")[-1]]), names
+        leaked = [
+            name
+            for name in names
+            if name.endswith(".env") or name.split("/")[-1] == ".env"
+        ]
+        assert not leaked, names
     finally:
         if had_env and backup is not None:
             env_file.write_text(backup)
