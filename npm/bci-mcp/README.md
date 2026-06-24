@@ -1,18 +1,34 @@
 # bci-mcp
 
-**Stream live EEG brain state — focus, calm, attention — into Claude.** Demo mode works with no headset.
+**Ask Claude what your brain is doing.**
 
-This npm package is a thin **npx** launcher for the Python server on [PyPI](https://pypi.org/project/bci-mcp/). It runs `uvx bci-mcp serve` (or pipx / a global `bci-mcp` install).
+Focus. Calm. Attention. Band powers. Over MCP — the same pipe GitHub, Notion, and the rest use to talk to Claude.
 
-**Requires:** Node (for npx) plus [uv](https://docs.astral.sh/uv/) or Python (`pip install bci-mcp`).
+No EEG headset? There’s a built-in demo brain. You can wire this up and have a real conversation about “focus level” before you buy hardware.
 
-## Claude Code (one line)
+---
+
+### What this package actually is
+
+This is **not** the EEG stack. It’s the **doorbell**.
+
+`npx bci-mcp` downloads and runs the Python server from [PyPI](https://pypi.org/project/bci-mcp/). You get Node for install; Python does the signal processing. If `uv` or `pip` isn’t on your machine yet, the launcher will tell you.
+
+---
+
+### Claude Code
 
 ```bash
 claude mcp add bci-mcp -- npx -y bci-mcp
 ```
 
-## Claude Desktop
+Open Claude, run `/mcp`, make sure `bci-mcp` is green. Then:
+
+> Connect to the demo brain. What’s my focus right now?
+
+---
+
+### Claude Desktop
 
 Settings → Developer → Edit Config:
 
@@ -27,9 +43,13 @@ Settings → Developer → Edit Config:
 }
 ```
 
-## Cursor
+Quit Claude fully. Open it again. Same question as above.
 
-Add under `mcpServers` in `~/.cursor/mcp.json`:
+---
+
+### Cursor
+
+In `~/.cursor/mcp.json`, under `mcpServers`:
 
 ```json
 "bci-mcp": {
@@ -38,6 +58,12 @@ Add under `mcpServers` in `~/.cursor/mcp.json`:
 }
 ```
 
-Then ask: *“Connect to the demo brain — what’s my focus?”*
+---
 
-Docs: [github.com/enkhbold470/bci-mcp](https://github.com/enkhbold470/bci-mcp)
+### Real hardware
+
+Muse, OpenBCI, NeuroFocus, LSL streams — same server, different device URI. Start with `synthetic://` until the headset is on your desk.
+
+**Repo + docs:** [github.com/enkhbold470/bci-mcp](https://github.com/enkhbold470/bci-mcp)
+
+MIT
