@@ -35,8 +35,10 @@ $ bci-mcp stream --device synthetic://
 
 - [What it is](#what-it-is)
 - [Quickstart (30 seconds)](#quickstart-30-seconds)
+- [Install in one line](#install-in-one-line)
 - [Any EEG device](#any-eeg-device)
 - [Use it from Claude Desktop](#use-it-from-claude-desktop)
+- [Use it from Claude Code](#use-it-from-claude-code)
 - [MCP tools, resources, and prompt](#mcp-tools-resources-and-prompt)
 - [What you get](#what-you-get)
 - [Architecture](#architecture)
@@ -79,7 +81,48 @@ Run a neurofeedback session that nudges a single metric toward a target:
 bci-mcp neurofeedback --device synthetic:// --metric focus --target 0.7
 ```
 
-> Not on PyPI yet — clone the repo first: `git clone https://github.com/enkhbold470/bci-mcp.git && cd bci-mcp`.
+## Install in one line
+
+**Claude Code** (needs [Claude Code](https://code.claude.com/docs/en/mcp) + Node or uv):
+
+```bash
+claude mcp add bci-mcp -- npx -y bci-mcp
+```
+
+No Node? Python-only:
+
+```bash
+claude mcp add bci-mcp -- uvx bci-mcp serve
+```
+
+**Fully automatic** (picks npx → uvx → pip for you):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/scripts/install-mcp.sh | bash
+```
+
+**Claude Desktop** — Settings → Developer → Edit Config:
+
+```json
+{
+  "mcpServers": {
+    "bci-mcp": {
+      "command": "npx",
+      "args": ["-y", "bci-mcp"]
+    }
+  }
+}
+```
+
+**Cursor** — add to `~/.cursor/mcp.json` under `mcpServers`:
+
+```json
+"bci-mcp": { "command": "npx", "args": ["-y", "bci-mcp"] }
+```
+
+Then ask Claude: *“Connect to the demo brain — what’s my focus?”* No headset required.
+
+> PyPI: `pip install bci-mcp` · npm launcher: `npx -y bci-mcp` (see `npm/bci-mcp` to publish)
 
 ## Any EEG device
 
@@ -126,6 +169,26 @@ Claude: (calls start_neurofeedback, then get_neurofeedback_score)
 ```
 
 The synthetic device means this works the moment you install — no headset required to wire up and test the MCP integration.
+
+## Use it from Claude Code
+
+```bash
+claude mcp add bci-mcp -- npx -y bci-mcp
+```
+
+Python only (no Node):
+
+```bash
+claude mcp add bci-mcp -- uvx bci-mcp serve
+```
+
+If you already ran `pip install bci-mcp`:
+
+```bash
+claude mcp add bci-mcp -- bci-mcp serve
+```
+
+Check it connected with `claude mcp list` or `/mcp` inside a session. Share with the team via `.mcp.json` using `--scope project`.
 
 ## MCP tools, resources, and prompt
 

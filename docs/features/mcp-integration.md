@@ -20,6 +20,18 @@ BCI-MCP is a genuine **Model Context Protocol** server built with the official [
 
 3. Restart Claude Desktop. BCI-MCP will appear in Claude's tool list.
 
+## Claude Code setup
+
+```bash
+claude mcp add bci-mcp -- npx -y bci-mcp
+```
+
+Python only: `claude mcp add bci-mcp -- uvx bci-mcp serve`
+
+Auto-install script: `curl -fsSL https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/scripts/install-mcp.sh | bash`
+
+See the [Claude Code MCP docs](https://code.claude.com/docs/en/mcp) for scopes, `/mcp` status, and team `.mcp.json` sharing.
+
 ## MCP Tools
 
 All tools are implemented in `bci_mcp.mcp.server` and backed by `bci_mcp.mcp.service.BrainService`.

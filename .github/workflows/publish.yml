@@ -1,0 +1,69 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify tag matches package versions
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          PY="$(grep '^version = ' pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')"
+          NPM="$(node -p "require('./npm/bci-mcp/package.json').version")"
+          echo "tag=v${TAG} pyproject=${PY} npm=${NPM}"
+          test "$TAG" = "$PY" || { echo "pyproject.toml version must match tag"; exit 1; }
+          test "$TAG" = "$NPM" || { echo "npm/bci-mcp/package.json version must match tag"; exit 1; }
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check src tests
+      - run: python -m pytest
+
+      - uses: astral-sh/setup-uv@v5
+      - run: uv build
+      - run: test -f dist/bci_mcp-"${TAG}"-py3-none-any.whl
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm pack --dry-run
+        working-directory: npm/bci-mcp
+
+  pypi:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv build
+      - run: uv publish dist/*
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+
+  npm:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+      - run: npm publish --access public
+        working-directory: npm/bci-mcp
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
