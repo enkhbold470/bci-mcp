@@ -24,7 +24,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
     "Topic :: Scientific/Engineering :: Human Machine Interfaces",
 ]
-dependencies = ["numpy>=1.24", "scipy>=1.10", "mcp>=1.2.0", "typer>=0.12", "rich>=13.0"]
+dependencies = ["numpy>=1.24,<3", "scipy>=1.10,<2", "mcp>=1.2.0,<2", "typer>=0.12,<1", "rich>=13.0,<14"]
 
 [project.optional-dependencies]
 devices = ["brainflow>=5.10", "bleak>=0.21", "pyserial>=3.5"]

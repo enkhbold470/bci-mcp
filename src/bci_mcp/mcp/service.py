@@ -4,6 +4,7 @@ from __future__ import annotations
 import time
 
 from ..pipeline import Pipeline
+from ..recording.paths import safe_record_path, validate_mcp_uri
 
 
 class BrainService:
@@ -18,6 +19,7 @@ class BrainService:
         return {"devices": discover(), "schemes": list_schemes()}
 
     def connect(self, device_uri: str = "synthetic://") -> dict:
+        validate_mcp_uri(device_uri)
         if self._pipeline is not None:
             self._pipeline.stop()
         self._pipeline = Pipeline(device_uri)
@@ -75,7 +77,11 @@ class BrainService:
                fmt: str | None = None) -> dict:
         if self._pipeline is None:
             return {"error": "not connected"}
-        out = self._pipeline.record(seconds=seconds, path=path, fmt=fmt)
+        try:
+            safe_path = safe_record_path(path)
+        except ValueError as exc:
+            return {"error": str(exc)}
+        out = self._pipeline.record(seconds=seconds, path=safe_path, fmt=fmt)
         return {"recorded": True, "path": out, "seconds": seconds}
 
     def start_neurofeedback(self, metric: str = "focus", target: float = 0.7) -> dict:

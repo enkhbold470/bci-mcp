@@ -12,7 +12,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Verify tag matches package versions
         run: |
@@ -23,7 +23,7 @@ jobs:
           test "$TAG" = "$PY" || { echo "pyproject.toml version must match tag"; exit 1; }
           test "$TAG" = "$NPM" || { echo "npm/bci-mcp/package.json version must match tag"; exit 1; }
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
           python-version: "3.12"
 
@@ -31,14 +31,14 @@ jobs:
       - run: ruff check src tests
       - run: python -m pytest
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86  # v5
       - name: Build and verify wheel
         run: |
           TAG="${GITHUB_REF#refs/tags/v}"
           uv build
           test -f "dist/bci_mcp-${TAG}-py3-none-any.whl"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: "22"
       - run: npm pack --dry-run
@@ -52,8 +52,8 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86  # v5
       - run: uv build
       - name: Ensure sdist does not ship secrets
         run: |
@@ -68,8 +68,8 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: "24"
           registry-url: https://registry.npmjs.org
