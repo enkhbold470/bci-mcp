@@ -54,9 +54,10 @@ def test_mark_event_increments():
     assert svc.mark_event("task")["total_events"] == 2
 
 
-def test_record_and_neurofeedback(tmp_path):
+def test_record_and_neurofeedback(tmp_path, monkeypatch):
     import time
 
+    monkeypatch.setenv("BCI_RECORD_DIR", str(tmp_path))
     svc = BrainService()
     svc.connect("synthetic://?seed=1")
     try:

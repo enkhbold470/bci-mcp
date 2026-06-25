@@ -103,7 +103,13 @@ def record(device: str = typer.Option("synthetic://"), seconds: float = 10.0,
 @app.command()
 def play(path: str, once: bool = typer.Option(False)) -> None:
     """Replay a recording through the live brain-meter."""
-    stream(device=f"playback://{path}?loop=true", once=once)
+    from pathlib import Path as _Path
+
+    resolved = _Path(path).resolve()
+    if not resolved.is_file():
+        console.print(f"[red]File not found:[/red] {path}")
+        raise typer.Exit(1)
+    stream(device=f"playback://{resolved}?loop=true", once=once)
 
 
 @app.command()
@@ -142,6 +148,11 @@ def dashboard(device: str = typer.Option("synthetic://"), host: str = "127.0.0.1
     """Launch the live web dashboard."""
     from .dashboard.server import serve_dashboard
 
+    if host not in ("127.0.0.1", "::1", "localhost"):
+        console.print(
+            f"[yellow]Warning:[/yellow] Dashboard bound to {host} — brain state data will be "
+            "accessible to anyone on the network. The dashboard has no authentication."
+        )
     console.print(f"[green]Dashboard[/green] http://{host}:{port}  (device: {device})")
     serve_dashboard(device=device, host=host, port=port)
 
