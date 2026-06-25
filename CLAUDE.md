@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 src/bci_mcp/
-├── __init__.py            # triggers device registration; __version__ = "0.1.0"
+├── __init__.py            # triggers device registration; __version__ = "0.1.3"
 ├── cli.py                 # Typer CLI (entry point: bci-mcp)
 ├── pipeline.py            # Pipeline: Device → Stream → DSP → BrainState
 ├── core/
@@ -73,8 +73,10 @@ bci-mcp serve                        # MCP server (stdio)
 ## Tests
 
 ```bash
-ruff check src tests       # linter (must be clean before commit)
-python -m pytest           # runs all tests (80+ hardware-free tests)
+ruff check src tests                   # linter (must be clean before commit)
+python -m pytest                       # runs all tests
+python -m pytest tests/test_bands.py  # run a single test file
+python -m pytest -k test_focus        # run tests matching a name pattern
 ```
 
 All tests are **hardware-free**: synthetic device, recording playback, in-process LSL, BrainFlow synthetic board. No EEG headset needed.
