@@ -1,12 +1,31 @@
 import pytest
 
 from bci_mcp.dsp.calibration import Calibration
+from bci_mcp.dsp.metrics import DEFAULT_SCALING
 
 
 def test_uncalibrated_maps_to_unit_interval():
     cal = Calibration()
     assert not cal.calibrated
     out = cal.apply({"focus": 1.0, "calm": 0.0})
+    assert all(0.0 <= v <= 1.0 for v in out.values())
+
+
+def test_bounded_metric_can_read_high_uncalibrated():
+    # Regression: with the old global center=1.0, bounded [0,1] metrics like
+    # meditation were capped near sigmoid(0)=0.5 and could never read "high".
+    cal = Calibration(scaling=DEFAULT_SCALING)
+    assert not cal.calibrated
+    low = cal.apply({"meditation": 0.1})["meditation"]
+    high = cal.apply({"meditation": 0.9})["meditation"]
+    assert low < 0.3
+    assert high > 0.7
+    assert high > low
+
+
+def test_extreme_ratio_does_not_overflow():
+    cal = Calibration()
+    out = cal.apply({"fatigue": 1e12, "attention": -1e12})
     assert all(0.0 <= v <= 1.0 for v in out.values())
 
 
