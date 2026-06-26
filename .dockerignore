@@ -1,0 +1,39 @@
+# Keep the build context (and image) lean. The wheel only packages
+# src/bci_mcp, so tests/docs/build artifacts are not needed inside the image.
+.git
+.github
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Python caches / build outputs
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Dev / CI / docs (not needed at runtime)
+tests/
+docs/
+site/
+mkdocs.yml
+uv.lock
+
+# Local data & secrets
+recordings/
+*.npz
+*.csv
+*.edf
+.env
+.env.*
