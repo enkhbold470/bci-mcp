@@ -1,27 +1,14 @@
-version: '3'
-
+# The BCI-MCP server speaks MCP over stdio, so this just builds the image and
+# keeps stdin open for an MCP client to attach. Most users will instead point
+# their MCP client straight at `docker run --rm -i bci-mcp`.
 services:
-  bci-mcp-server:
+  bci-mcp:
     build: .
+    image: bci-mcp
     container_name: bci-mcp-server
-    ports:
-      - "8765:8765"
-    volumes:
-      - ./recordings:/app/recordings
-    restart: unless-stopped
-    command: python src/main.py --server
+    stdin_open: true   # keep STDIN open for the stdio JSON-RPC transport
+    tty: false
     environment:
       - PYTHONUNBUFFERED=1
-
-  docs:
-    build: .
-    container_name: bci-mcp-docs
-    ports:
-      - "8000:8000"
     volumes:
-      - .:/app
-    command: mkdocs serve -a 0.0.0.0:8000
-    depends_on:
-      - bci-mcp-server
-    environment:
-      - PYTHONUNBUFFERED=1
+      - ./recordings:/data   # recordings written by the `record` tool
