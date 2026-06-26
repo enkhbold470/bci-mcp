@@ -1,6 +1,6 @@
 import numpy as np
 
-from bci_mcp.dsp.quality import assess_quality
+from bci_mcp.dsp.quality import HARD_ARTIFACTS, assess_quality
 
 
 def test_flatline_is_no_contact():
@@ -24,3 +24,17 @@ def test_railing_flagged():
     data[0, ::2] = -5000.0  # huge swing, not flat
     _, _, artifacts = assess_quality(data, 256.0)
     assert "railing" in artifacts
+
+
+def test_emg_flagged_for_large_amplitude():
+    rng = np.random.default_rng(1)
+    data = rng.normal(0, 150.0, (1, 256)).astype(np.float32)  # peak-to-peak ~400-2000µV
+    score, _, artifacts = assess_quality(data, 256.0)
+    assert "emg" in artifacts
+    assert score < 1.0
+
+
+def test_hard_artifacts_are_flatline_and_railing():
+    assert "flatline" in HARD_ARTIFACTS
+    assert "railing" in HARD_ARTIFACTS
+    assert "blink" not in HARD_ARTIFACTS

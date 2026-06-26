@@ -27,3 +27,16 @@ def test_summary_is_readable_string():
     s = _state().summary()
     assert "focus" in s.lower()
     assert "good" in s.lower()
+
+
+def test_confidence_and_status_default_and_serialize():
+    d = _state().to_dict()
+    assert d["confidence"] == 1.0
+    assert d["status"] == "ok"
+    assert d["metric_confidence"] == {}
+
+
+def test_unreliable_status_shows_in_summary():
+    s = _state()
+    s.status = "unreliable"
+    assert "unreliable" in s.summary().lower()

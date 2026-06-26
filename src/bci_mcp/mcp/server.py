@@ -29,7 +29,12 @@ def disconnect() -> dict:
 
 @mcp.tool()
 def get_brain_state() -> dict:
-    """Get the current brain state: focus, calm, attention, band powers, signal quality."""
+    """Get the current brain state. Returns heuristic band-power proxy metrics
+    (focus, calm, attention, engagement, fatigue, meditation), band powers, and
+    signal quality. Each reading carries `confidence` (0..1), per-metric
+    `metric_confidence`, and a `status` ('ok'/'warming_up'/'unreliable') — weight
+    the metrics by these and do not interpret an unreliable/low-confidence
+    reading. Call get_metric_definitions to learn what each metric means."""
     return _service.get_brain_state()
 
 
@@ -41,8 +46,18 @@ def get_band_powers() -> dict:
 
 @mcp.tool()
 def get_signal_quality() -> dict:
-    """Get electrode signal quality and detected artifacts (blink, railing, …)."""
+    """Get electrode signal quality, reading confidence, and detected artifacts
+    (blink, railing, emg, flatline)."""
     return _service.get_signal_quality()
+
+
+@mcp.tool()
+def get_metric_definitions() -> dict:
+    """Explain each brain metric: its exact formula, the literature it draws on,
+    and an honest caveat. Call this to learn what focus/calm/attention/engagement/
+    fatigue/meditation actually measure and how much to trust them — they are
+    heuristic proxies, not validated cognitive measurements."""
+    return _service.get_metric_definitions()
 
 
 @mcp.tool()
@@ -81,9 +96,14 @@ def brain_device_resource() -> str:
 def interpret_brain_state() -> str:
     """Prompt template: ask the model to interpret the current brain state."""
     return (
-        "Call get_brain_state, then explain in plain language what the wearer's "
-        "focus, calm, and attention levels suggest about their current cognitive "
-        "state, and suggest one actionable tip."
+        "Call get_brain_state (and get_metric_definitions if unsure what the "
+        "numbers mean). These metrics are heuristic EEG band-power proxies, not "
+        "validated cognitive measurements: weight them by the `confidence` / "
+        "`metric_confidence` fields and the `signal_quality`/`status`. If status "
+        "is 'unreliable' or confidence is low, say the reading can't be trusted "
+        "rather than interpreting it. Otherwise explain in plain language what "
+        "the wearer's focus, calm, and attention levels *suggest* (not prove) "
+        "about their state, and offer one actionable tip."
     )
 
 

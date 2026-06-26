@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import numpy as np
 
+# Artifacts that mean the window is unusable (not just degraded). The pipeline
+# marks any reading containing one of these as status="unreliable".
+HARD_ARTIFACTS = frozenset({"flatline", "railing"})
+
 
 def assess_quality(data: np.ndarray, fs: float) -> tuple[float, str, list[str]]:
     artifacts: list[str] = []
@@ -15,7 +19,8 @@ def assess_quality(data: np.ndarray, fs: float) -> tuple[float, str, list[str]]:
     if amp > 2000.0:  # rail-to-rail swing
         artifacts.append("railing")
         score -= 0.6
-    elif amp > 400.0:  # implausibly large for scalp EEG
+    elif amp > 400.0:  # implausibly large for scalp EEG — likely muscle (EMG)
+        artifacts.append("emg")
         score -= 0.25
     ch0 = data[0] - np.mean(data[0])
     if float(np.max(np.abs(ch0))) > 150.0 and amp <= 2000.0:
