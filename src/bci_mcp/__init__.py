@@ -2,4 +2,4 @@
 
 from . import devices as _devices  # noqa: F401  (triggers device registration)
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

@@ -41,18 +41,34 @@ class BrainService:
 
     def get_band_powers(self) -> dict:
         state = self.get_brain_state()
-        if "error" in state or "status" in state:
+        if "metrics" not in state:  # error / warming_up sentinel
             return state
         return {"band_powers": state["band_powers"],
-                "relative_band_powers": state["relative_band_powers"]}
+                "relative_band_powers": state["relative_band_powers"],
+                "confidence": state["confidence"]}
 
     def get_signal_quality(self) -> dict:
         state = self.get_brain_state()
-        if "error" in state or "status" in state:
+        if "metrics" not in state:  # error / warming_up sentinel
             return state
         return {"signal_quality": state["signal_quality"],
                 "quality_score": state["quality_score"],
-                "artifacts": state["artifacts"]}
+                "artifacts": state["artifacts"],
+                "confidence": state["confidence"],
+                "status": state["status"]}
+
+    def get_metric_definitions(self) -> dict:
+        from ..dsp.metrics import METRIC_INFO
+
+        return {
+            "metrics": METRIC_INFO,
+            "disclaimer": (
+                "These are heuristic EEG band-power ratios, not validated "
+                "clinical measurements. Weight them by the `confidence` and "
+                "`metric_confidence` fields, treat `status` == 'unreliable' as "
+                "untrustworthy, and calibrate for personalized 0-1 scaling."
+            ),
+        }
 
     def calibrate(self, seconds: int = 20, condition: str = "relax") -> dict:
         if self._pipeline is None:
@@ -71,7 +87,10 @@ class BrainService:
         if "metrics" not in state:
             return state
         return {"window_seconds": seconds, "current": state["metrics"],
-                "signal_quality": state["signal_quality"]}
+                "metric_confidence": state["metric_confidence"],
+                "confidence": state["confidence"],
+                "signal_quality": state["signal_quality"],
+                "status": state["status"]}
 
     def record(self, seconds: float = 10.0, path: str = "session.npz",
                fmt: str | None = None) -> dict:

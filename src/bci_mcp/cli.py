@@ -40,6 +40,8 @@ def _render(state: BrainState | None) -> Table:
         bar = "█" * int(value * 20) + "░" * (20 - int(value * 20))
         table.add_row(name, f"{value:.2f}", bar)
     table.add_row("signal", state.signal_quality, f"{state.quality_score:.2f}")
+    conf_note = state.status if state.status != "ok" else ""
+    table.add_row("confidence", f"{state.confidence:.2f}", conf_note)
     return table
 
 

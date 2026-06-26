@@ -26,7 +26,11 @@ clean = notch(filtered, fs=256.0, freq=60.0, q=30.0)
 
 ## Band powers (`bci_mcp.dsp.bands`)
 
-Band powers are computed via **Welch PSD** (`scipy.signal.welch`) and integrated with the trapezoid rule. Result is mean absolute power across channels, in µV².
+Band powers are computed via **Welch PSD** (`scipy.signal.welch`) and integrated with the trapezoid rule. Result is mean absolute power across channels, in µV². By Parseval's theorem this integrated-PSD band power equals the variance (RMS²) of the band-filtered signal up to scaling, so "PSD vs RMS" is a unit convention, not a correctness choice.
+
+`band_powers` targets ~1 s Welch segments with 50 % overlap so a longer analysis window is averaged over several segments (lower-variance PSD) rather than a single noisy periodogram, and it falls back to rectangular integration for any band that captures only one frequency bin (a single-bin trapezoid would otherwise return 0).
+
+EEG band edges are not universally fixed; `theta`/`alpha`/`beta` use textbook values and `delta` (1–4 Hz) / `gamma` (30–45 Hz) are common variants. The 45 Hz gamma ceiling keeps it below 50/60 Hz mains noise on consumer hardware.
 
 | Band | Frequency range |
 |---|---|
@@ -47,28 +51,37 @@ rbp = relative_band_powers(bp)
 
 ## Cognitive metrics (`bci_mcp.dsp.metrics`)
 
-Heuristic ratios derived from band powers (unscaled, then personalized by calibration):
+**Heuristic band-power ratios, not validated clinical measurements.** Each is a recognizable simplification of an index from the literature; `metrics.METRIC_INFO` (also exposed via the MCP `get_metric_definitions` tool) records the formula, basis, and an honest caveat for each.
 
-| Metric | Formula | Interpretation |
+| Metric | Formula | Basis (see `METRIC_INFO` for caveats) |
 |---|---|---|
-| `focus` | β / (α + θ) | Concentration (high beta relative to alpha+theta) |
-| `calm` | α / (α + β) | Relaxation (high alpha relative to beta) |
-| `attention` | β / θ | Beta vs theta |
-| `engagement` | (β + γ) / (α + θ + δ) | Pope-style engagement index |
-| `fatigue` | (θ + δ) / (α + β) | Drowsiness (slow waves dominating) |
-| `meditation` | θ / total | Relative theta power |
+| `focus` | β / (α + θ) | Pope et al. (1995) EEG engagement index — best-validated of these ratios |
+| `calm` | α / (α + β) | Alpha-up / beta-down relaxation correlate |
+| `attention` | β / θ | Inverse theta/beta ratio (TBR; Lubar 1991, Monastra 1999; validity contested) |
+| `engagement` | β / α | Beta/alpha arousal–activation ratio (distinct from the Pope index) |
+| `fatigue` | (θ + α) / β | Eoh et al. (2005) driver mental-fatigue index |
+| `meditation` | α / (α + β + θ) | Relative alpha (Berger rhythm / NeuroSky convention) |
 
-All metrics are then passed through `Calibration.apply()` which rescales using a personal baseline (min/max from the calibration recording).
+Delta and gamma are deliberately **excluded** from every metric: on consumer hardware over short windows, 30–45 Hz "gamma" is dominated by EMG and <1–4 Hz delta by drift, so they would add noise rather than signal (they remain available as raw band powers). The metrics are also chosen so no two are collinear on the same band in the same direction — `meditation` *falls* with theta while `fatigue` *rises* with it, so a drowsy reading cannot score high on both.
+
+All metrics are then passed through `Calibration.apply()`, which rescales each to 0–1. With a personal baseline it uses a per-metric z-score; **uncalibrated**, it uses a per-metric default center (bounded metrics like `calm`/`meditation` are centered at 0.5, unbounded ratios at 1.0) so bounded metrics can still read high without calibration.
 
 ## Signal quality (`bci_mcp.dsp.quality`)
 
 `assess_quality(data, fs)` returns `(score: float, label: str, artifacts: list[str])`:
 
-- **no_contact**: variance < 0.001 — electrode not making contact.
+- **no_contact / flatline**: variance < 0.001 — electrode not making contact.
 - **railing**: peak-to-peak > 2000 µV — signal is clipping. Score −0.6.
+- **emg**: peak-to-peak 400–2000 µV — implausibly large for scalp EEG, likely muscle. Score −0.25.
 - **blink**: peak amplitude > 150 µV on channel 0 without railing. Added to artifact list.
 - Label: `good` (score > 0.75), `fair` (> 0.4), `poor` (≤ 0.4).
 
+`flatline` and `railing` are **hard artifacts** (`quality.HARD_ARTIFACTS`): the pipeline marks any reading containing one — or any `poor`-quality window — as `status = "unreliable"` and collapses its `confidence` so contaminated metrics are never narrated as a clean reading.
+
+## Confidence (`Pipeline.current_state`)
+
+Every `BrainState` carries a `confidence` (0..1) and per-metric `metric_confidence`, plus a `status` of `ok` / `warming_up` / `unreliable`. Confidence folds in signal quality, whether a baseline has been calibrated (×0.6 uncalibrated), and how full the analysis window was. The MCP `get_brain_state`, `get_signal_quality`, and `stream_summary` tools surface these so an LLM (or any consumer) can hedge or discard low-confidence readings.
+
 ## Calibration (`bci_mcp.dsp.calibration`)
 
-`Calibration.from_samples(samples)` computes per-metric min/max from a baseline recording, then `apply(raw)` rescales each metric to 0–1 relative to that baseline. Without calibration, raw ratios are still useful but not normalized.
+`Calibration.from_samples(samples)` computes a per-metric mean/std from a baseline recording, then `apply(raw)` maps each metric to 0–1 via a logistic of its z-score relative to that baseline. Without calibration it uses the per-metric default centers in `metrics.DEFAULT_SCALING` (bounded metrics centered at 0.5, unbounded ratios at 1.0), so uncalibrated readings are still usable — just not personalized.

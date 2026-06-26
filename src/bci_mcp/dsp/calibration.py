@@ -8,10 +8,19 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+# z is clamped before the logistic to avoid math.exp overflow on extreme ratios
+# (e.g. a band power collapsing to ~0 in a denominator).
+_Z_CLAMP = 60.0
+
 
 @dataclass
 class Calibration:
     baseline: dict[str, dict[str, float]] = field(default_factory=dict)
+    # Optional per-metric (center, scale) used only on the uncalibrated path.
+    # Empty → every metric defaults to (1.0, 1.0) i.e. ratio of 1.0 maps to 0.5.
+    # The pipeline injects metrics.DEFAULT_SCALING so bounded metrics (calm,
+    # meditation) are centered at 0.5 instead of being capped low.
+    scaling: dict[str, tuple[float, float]] = field(default_factory=dict)
 
     @property
     def calibrated(self) -> bool:
@@ -25,7 +34,9 @@ class Calibration:
                 std = self.baseline[key]["std"] or 1.0
                 z = (value - mean) / std
             else:
-                z = value - 1.0  # default: ratio of 1.0 maps to 0.5
+                center, scale = self.scaling.get(key, (1.0, 1.0))
+                z = (value - center) / (scale or 1.0)
+            z = max(-_Z_CLAMP, min(_Z_CLAMP, z))
             out[key] = 1.0 / (1.0 + math.exp(-z))
         return out
 
@@ -37,7 +48,11 @@ class Calibration:
         return cls(baseline=json.loads(text)["baseline"])
 
     @classmethod
-    def from_samples(cls, raw_list: list[dict[str, float]]) -> Calibration:
+    def from_samples(
+        cls,
+        raw_list: list[dict[str, float]],
+        scaling: dict[str, tuple[float, float]] | None = None,
+    ) -> Calibration:
         if not raw_list:
             raise ValueError("from_samples requires at least one sample")
         keys = raw_list[0].keys()
@@ -54,4 +69,4 @@ class Calibration:
                     f"Calibration std=0 for '{k}'; baseline may be degenerate",
                     stacklevel=2,
                 )
-        return cls(baseline=baseline)
+        return cls(baseline=baseline, scaling=scaling or {})
