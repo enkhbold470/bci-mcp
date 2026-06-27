@@ -28,7 +28,6 @@ tests/
 docs/
 site/
 mkdocs.yml
-uv.lock
 
 # Local data & secrets
 recordings/

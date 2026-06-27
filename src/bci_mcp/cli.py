@@ -74,8 +74,13 @@ def stream(
 
 
 @app.command()
-def serve(transport: str = typer.Option("stdio", help="stdio | sse")) -> None:
-    """Run the MCP server (for Claude Desktop)."""
+def serve(
+    transport: str = typer.Option(
+        "stdio",
+        help="stdio | sse | streamable-http (use streamable-http on Manufact Cloud)",
+    ),
+) -> None:
+    """Run the MCP server (for Claude Desktop or Manufact Cloud)."""
     from .mcp.server import serve as serve_mcp
 
     serve_mcp(transport=transport)
