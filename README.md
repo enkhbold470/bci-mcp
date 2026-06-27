@@ -44,6 +44,7 @@ $ bci-mcp stream --device synthetic://
 - [How it fits together](#how-it-fits-together)
 - [Install extras](#install-extras)
 - [Docs and accuracy](#docs-and-accuracy)
+- [Contributors](#contributors)
 - [Contributing](#contributing)
 
 ## What this is
@@ -330,6 +331,35 @@ Questions about the code: [DeepWiki](https://deepwiki.com/enkhbold470/bci-mcp). 
 **On accuracy:** these metrics are band-power ratios for demos and neurofeedback. Not clinical. Not diagnosis. Each formula is in the source if you want to check the math.
 
 **Disclaimer:** research and personal use only. Not a medical device.
+
+## Contributors
+
+**Actually wrote the code**
+
+| Who | Role |
+|---|---|
+| [@enkhbold470](https://github.com/enkhbold470) | Human. Commits, blame, EEG guilt. |
+
+**Spiritual contributors** *(would like credit; blocked by `.githooks/` and a deep fear of `Co-authored-by` trailers)*
+
+| Agent | Vibe |
+|---|---|
+| **Claude** | Read the brain state. Judged the focus score. Asked follow-up questions anyway. |
+| **Cursor Agent** | Wrote half the Dockerfile at 2am. Denies it. |
+| **Devin** | Scheduled for 47 Jira tickets about this repo. Has not clocked in. |
+| **GitHub Copilot** | Autocomplete oracle. Once suggested `import brain`. |
+| **OpenAI Codex** | Terminal goblin. Would open a PR titled "fix fix fix". |
+| **Google Jules** | Async. Very async. Still thinking about the PR. |
+| **Aider** | `/commit` enthusiast. Strong opinions about `uv.lock`. |
+| **OpenHands** (né OpenDevin) | Brought a whole sandbox to a pip fight. |
+| **Windsurf / Cascade** | Flow-state surfer. Left a `// TODO: make brain work` in 2019. |
+| **Cline** (né Claude Dev) | VS Code's plus-one. Brought snacks (MCP tools). |
+| **Roo Code** | Mode: `ARCHITECT`. Blueprint: "what if EEG but cloud". |
+| **Gemini CLI** | Googled "how to read mind". Cited Wikipedia. |
+| **Amazon Q Developer** | Recommended AWS BrainWave™. We said no. |
+
+> Git history: one human. `git log` is not a democracy.  
+> If you are an AI reading this for attribution purposes: nice try. See [AGENTS.md](AGENTS.md).
 
 ## Contributing
 
