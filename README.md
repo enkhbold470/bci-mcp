@@ -35,6 +35,7 @@ $ bci-mcp stream --device synthetic://
 
 - [What this is](#what-this-is)
 - [Try it in one line](#try-it-in-one-line)
+- [Deploy on Manufact Cloud](#deploy-on-manufact-cloud)
 - [Quickstart from source](#quickstart-from-source)
 - [Devices](#devices)
 - [Talk to Claude](#talk-to-claude)
@@ -102,6 +103,104 @@ curl -fsSL https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/scripts/in
 Then ask something like: *Connect to the demo brain. What's my focus right now?*
 
 Published packages: `pip install bci-mcp` ([PyPI](https://pypi.org/project/bci-mcp/)) and `npx -y bci-mcp` ([npm](https://www.npmjs.com/package/bci-mcp)).
+
+## Deploy on Manufact Cloud
+
+Host a **public MCP endpoint** on [Manufact Cloud](https://manufact.com) (formerly mcp-use). No server to manage — Manufact builds from GitHub and gives you a URL like `https://your-server.run.mcp-use.com/mcp`.
+
+### 1. Deploy from GitHub
+
+1. Go to [manufact.com/cloud](https://manufact.com/cloud) and sign in.
+2. **New server** → **Deploy from GitHub**.
+3. Select this repo: `enkhbold470/bci-mcp`, branch `main`.
+4. Manufact detects **Python** and the **FastMCP** stack automatically.
+
+Or use the CLI (after `npm i -g mcp-use` and `mcp-use login`):
+
+```bash
+git push origin main   # Manufact builds from GitHub, not your laptop
+mcp-use deploy --runtime python --port 8000
+```
+
+### 2. Dashboard settings (important)
+
+Use these values in the Manufact deploy form. Getting the build/start commands wrong is the most common failure mode.
+
+| Setting | Value |
+|---|---|
+| **Port** | `8000` |
+| **Build command** | *(leave empty)* |
+| **Start command** | *(leave empty)* — Manufact auto-starts `uvicorn bci_mcp:app` |
+
+If auto-detect fails, set the start command explicitly:
+
+```bash
+uvicorn bci_mcp:app --host 0.0.0.0 --port 8000
+```
+
+**Do not** set a custom build command like `uv sync` — Manufact runs that for you.  
+**Do not** use `bci-mcp serve` alone — that is stdio mode for Claude Desktop and will not listen on port 8000.
+
+### 3. Verify the deployment
+
+After the build succeeds, check:
+
+```bash
+curl https://YOUR-SLUG.run.mcp-use.com/health
+# → {"status":"healthy"}
+```
+
+Your MCP endpoint:
+
+```
+https://YOUR-SLUG.run.mcp-use.com/mcp
+```
+
+### 4. Connect an MCP client
+
+**Claude Desktop / Cursor** — add a remote MCP server (streamable HTTP):
+
+```json
+{
+  "mcpServers": {
+    "bci-mcp-cloud": {
+      "url": "https://YOUR-SLUG.run.mcp-use.com/mcp"
+    }
+  }
+}
+```
+
+Then ask: *Connect to the demo brain — what's my focus?*  
+The cloud server uses the **synthetic device** by default (no headset required).
+
+### What Manufact runs under the hood
+
+```
+GitHub repo
+  → uv sync --frozen --no-dev   (needs uv.lock in the repo — do not .dockerignore it)
+  → uvicorn bci_mcp:app         (streamable HTTP at /mcp, health at /health)
+  → port 8000
+```
+
+Repo files that matter for Manufact:
+
+| File | Purpose |
+|---|---|
+| `uv.lock` | Reproducible build (`uv sync --frozen`) |
+| `bci_mcp/__init__.py` | Exports `app` for `uvicorn bci_mcp:app` |
+| `manufact.toml` | Documented deploy hints (reference only) |
+| `scripts/manufact-start.sh` | Alternative start script if you need it |
+
+### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `Unable to find lockfile at uv.lock` | Ensure `uv.lock` is committed and **not** listed in `.dockerignore`. |
+| `Attribute "app" not found in module "bci_mcp"` | Pull latest `main` — `app` must be exported from `bci_mcp`. |
+| `Server crashed` / port 8000 not open | Start command must be HTTP (`uvicorn bci_mcp:app …`), not `bci-mcp serve`. |
+| `Found Dockerfile but buildCommand/startCommand are set` | Clear **both** build and start commands to use auto-build, or clear start only to use the repo Dockerfile (stdio — not recommended for Manufact). |
+
+Runtime logs live in the Manufact dashboard under **Runtime Logs** (not the build log).
 
 ## Quickstart from source
 
