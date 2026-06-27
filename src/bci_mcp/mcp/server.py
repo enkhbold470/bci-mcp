@@ -4,6 +4,8 @@ from __future__ import annotations
 import os
 
 from mcp.server.fastmcp import FastMCP
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from .service import BrainService
 
@@ -18,7 +20,17 @@ def _listen_port() -> int:
     return int(os.environ.get("FASTMCP_PORT", os.environ.get("PORT", "8000")))
 
 
-mcp = FastMCP("bci-mcp", host=_listen_host(), port=_listen_port())
+def _stateless_http() -> bool:
+    flag = os.environ.get("FASTMCP_STATELESS_HTTP", "").lower()
+    return flag in {"1", "true", "yes"} or os.environ.get("MCP_ENV") == "production"
+
+
+mcp = FastMCP(
+    "bci-mcp",
+    host=_listen_host(),
+    port=_listen_port(),
+    stateless_http=_stateless_http(),
+)
 _service = BrainService()
 
 
@@ -138,5 +150,12 @@ def get_neurofeedback_score() -> dict:
     return _service.get_neurofeedback_score()
 
 
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(_request: Request) -> JSONResponse:
+    return JSONResponse({"status": "healthy"})
+
+
 def serve(transport: str = "stdio") -> None:
+    if transport == "stdio" and os.environ.get("PORT"):
+        transport = "streamable-http"
     mcp.run(transport=transport)

@@ -1,14 +1,13 @@
 # Manufact Cloud (formerly mcp-use) deployment hints.
-# In the Manufact dashboard, leave Build command and Start command EMPTY
-# to use the repo Dockerfile. If you use the Python auto-buildpack instead,
-# keep Build empty (Manufact runs `uv sync --frozen` when uv.lock is present)
-# and set Start to:
 #
-#   bci-mcp serve --transport streamable-http
+# Recommended dashboard settings:
+#   Port: 8000
+#   Build command: (empty — auto-buildpack runs `uv sync --frozen`)
+#   Start command: uvicorn src.server:app --host 0.0.0.0 --port 8000
 #
-# Port: 8000
-# MCP endpoint: https://<your-slug>.run.mcp-use.com/mcp
+# Alternative start command:
+#   sh scripts/manufact-start.sh
 
 [deploy]
 port = 8000
-start_command = "bci-mcp serve --transport streamable-http"
+start_command = "uvicorn src.server:app --host 0.0.0.0 --port 8000"
