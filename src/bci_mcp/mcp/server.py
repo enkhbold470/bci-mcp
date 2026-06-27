@@ -1,11 +1,24 @@
 """Real Model Context Protocol server exposing live brain state."""
 from __future__ import annotations
 
+import os
+
 from mcp.server.fastmcp import FastMCP
 
 from .service import BrainService
 
-mcp = FastMCP("bci-mcp")
+
+def _listen_host() -> str:
+    if os.environ.get("PORT") or os.environ.get("MCP_ENV") == "production":
+        return os.environ.get("FASTMCP_HOST", "0.0.0.0")
+    return os.environ.get("FASTMCP_HOST", "127.0.0.1")
+
+
+def _listen_port() -> int:
+    return int(os.environ.get("FASTMCP_PORT", os.environ.get("PORT", "8000")))
+
+
+mcp = FastMCP("bci-mcp", host=_listen_host(), port=_listen_port())
 _service = BrainService()
 
 
