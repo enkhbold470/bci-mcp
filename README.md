@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/hero.svg" alt="BCI-MCP streams live EEG brain state into Claude over MCP" width="100%">
+<img src="docs/assets/hero.png" alt="BCI-MCP streams live EEG brain state into Claude over MCP" width="100%">
 
 # BCI-MCP
 
