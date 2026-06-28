@@ -1,6 +1,6 @@
 {
   "name": "bci-mcp",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Plug your brain into Claude — npx launcher for the bci-mcp EEG MCP server (Python/PyPI)",
   "license": "MIT",
   "repository": {

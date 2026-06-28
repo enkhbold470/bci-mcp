@@ -107,7 +107,7 @@ All tests are **hardware-free**: synthetic device, recording playback, in-proces
 
 `.github/workflows/ci.yml` gates every push/PR across Python **3.10/3.11/3.12** (supported range) on, in order: `ruff check` → `pytest` → `mkdocs build --strict`, plus a separate `npm pack --dry-run` job. So a docs/mkdocs change that warns, or a broken npm launcher, fails CI even when pytest passes.
 
-**Releases are tag-driven and need a dual version bump.** `publish.yml` fires on `v*` tags and hard-fails unless the tag matches **both** `pyproject.toml` `version` **and** `npm/bci-mcp/package.json` `version`. Bump both to the same `X.Y.Z`, then tag. (Heads-up: they are currently out of sync — Python is `0.2.0`, the npm launcher is `0.1.3` — so a `v0.2.0` tag fails verify until npm is bumped.) Publishing is OIDC trusted publishing (PyPI via `uv publish`, npm via `npm publish --provenance`).
+**Releases are tag-driven and need a dual version bump.** `publish.yml` fires on `v*` tags and hard-fails unless the tag matches **both** `pyproject.toml` `version` **and** `npm/bci-mcp/package.json` `version`. Bump both to the same `X.Y.Z`, then tag. (Both are currently aligned at `0.2.0`.) Publishing is OIDC trusted publishing (PyPI via `uv publish`, npm via `npm publish --provenance`).
 
 ## Architecture
 
