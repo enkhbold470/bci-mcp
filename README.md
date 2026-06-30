@@ -2,6 +2,10 @@
 
 <img src="docs/assets/hero.svg" alt="BCI-MCP streams live EEG brain state into Claude over MCP" width="100%">
 
+
+https://github.com/user-attachments/assets/8b37cebc-2b6b-40de-b440-b02ffb9b617e
+
+
 # BCI-MCP
 
 **Ask Claude about your brain. Focus, calm, attention. Works without a headset.**
