@@ -1,3 +1,5 @@
+<!-- mcp-name: io.github.enkhbold470/bci-mcp -->
+
 <div align="center">
 
 <img src="docs/assets/hero.svg" alt="BCI-MCP streams live EEG brain state into Claude over MCP" width="100%">
@@ -15,6 +17,8 @@ Real [Model Context Protocol](https://modelcontextprotocol.io) server for EEG. P
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/enkhbold470/bci-mcp)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://enkhbold470.github.io/bci-mcp/)
 [![CI](https://github.com/enkhbold470/bci-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/enkhbold470/bci-mcp/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/bci-mcp)](https://pypi.org/project/bci-mcp/)
+[![npm](https://img.shields.io/npm/v/bci-mcp)](https://www.npmjs.com/package/bci-mcp)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-7c3aed)](https://modelcontextprotocol.io)
@@ -39,6 +43,7 @@ $ bci-mcp stream --device synthetic://
 ## Contents
 
 - [What this is](#what-this-is)
+- [Why this exists](#why-this-exists)
 - [Try it in one line](#try-it-in-one-line)
 - [Deploy on Manufact Cloud](#deploy-on-manufact-cloud)
 - [Quickstart from source](#quickstart-from-source)
@@ -48,6 +53,7 @@ $ bci-mcp stream --device synthetic://
 - [What's in the box](#whats-in-the-box)
 - [How it fits together](#how-it-fits-together)
 - [Install extras](#install-extras)
+- [Troubleshooting devices](#troubleshooting-devices)
 - [Docs and accuracy](#docs-and-accuracy)
 - [Contributors](#contributors)
 - [Contributing](#contributing)
@@ -66,6 +72,17 @@ Sources that work today:
 - [LSL](https://labstreaminglayer.org) streams
 - Generic serial
 - Recorded sessions (replay from file)
+
+## Why this exists
+
+LLMs can already read your screen and your codebase. They can't read *you*. This closes that gap with the one physiological signal consumer hardware does reasonably well — EEG — and hands it to Claude as plain numbers it can reason over. Concretely, people use it for:
+
+- **Neurofeedback with a coach.** Run `start_neurofeedback` on focus or calm and let Claude read the score, explain the trend, and adjust the session — instead of watching a bar chart alone.
+- **State-aware assistants.** An agent that can tell your attention is fading can summarize instead of elaborate, or suggest a break. Focus, calm, and attention arrive as numbers any MCP client can act on.
+- **Accessibility.** A language-model front end to brain signals for motor-impaired users, where a tool call stands in for a click.
+- **Research & prototyping.** One URI scheme covers OpenBCI, Muse, LSL, serial, and file replay, so an experiment written against `synthetic://` runs unchanged on real hardware. Recording and playback make sessions reproducible.
+
+Not clinical, not diagnosis — band-power ratios for demos, neurofeedback, and research (see [Docs and accuracy](#docs-and-accuracy)).
 
 ## Try it in one line
 
@@ -281,7 +298,7 @@ Restart Claude after editing config. Check `/mcp` in Claude Code or the plug ico
 
 Stdio server built with FastMCP (official MCP Python SDK).
 
-**Tools:** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `calibrate`, `record`, `start_neurofeedback`, `get_neurofeedback_score`, `mark_event`, `stream_summary`
+**Tools (13):** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `get_metric_definitions`, `calibrate`, `record`, `start_neurofeedback`, `get_neurofeedback_score`, `mark_event`, `stream_summary`
 
 **Resources:** `brain://state`, `brain://device`
 
@@ -326,6 +343,22 @@ pip install -e ".[all]"         # everything above
 ```
 
 From PyPI: `pip install bci-mcp` (core) or install extras the same way with the package name instead of `-e ".[...]"`.
+
+## Troubleshooting devices
+
+Start with the synthetic device — if `synthetic://` works, the MCP + DSP stack is fine and the problem is hardware or an extra.
+
+| Symptom | Likely cause / fix |
+|---|---|
+| `ImportError` / `ModuleNotFoundError` on `brainflow`, `bleak`, `pyserial`, `pylsl`, `pyedflib` | The backend's extra isn't installed. Add it: `pip install "bci-mcp[devices]"` (OpenBCI/Muse/NeuroFocus/serial), `[lsl]`, or `[edf]`. |
+| `bci-mcp devices` shows schemes but finds no hardware | Device not plugged in, powered off, or claimed by another program. Close other EEG software and reconnect. |
+| Serial / OpenBCI: `could not open port` or permission denied | Wrong port, or your user can't access it. Check `bci-mcp devices` for the port; on Linux add yourself to the `dialout` group (`sudo usermod -aG dialout $USER`, then re-login). |
+| Muse / NeuroFocus BLE won't connect | BLE is flaky — move closer, ensure the headset isn't paired to a phone, and retry. On Linux, BLE needs `bluez` running. |
+| Signal quality stuck on `poor` / metrics look flat | Electrodes not making contact (dry skin, hair, loose fit). Re-seat the headset; give it ~10 s to warm up before reading state. |
+| Claude connects but every tool returns `{"error": ...}` | You haven't called `connect` yet. Ask Claude to connect to a device (e.g. the demo brain) first. |
+| `warming_up` on the first read | Normal — the pipeline needs ~0.5 s of samples. Read again in a moment. |
+
+Over MCP, only `synthetic`, `brainflow`, `lsl`, and `neurofocus` URIs are allowed; `playback://` and `serial://` are rejected because they grant filesystem/device access to the client.
 
 ## Docs and accuracy
 
