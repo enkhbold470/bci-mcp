@@ -18,6 +18,7 @@ Real [Model Context Protocol](https://modelcontextprotocol.io) server for EEG. P
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-7c3aed)](https://modelcontextprotocol.io)
+[![Glama](https://img.shields.io/badge/Glama-MCP%20Directory-ff6b35)](https://glama.ai/mcp/servers/@enkhbold470/bci-mcp)
 [![GitHub stars](https://img.shields.io/github/stars/enkhbold470/bci-mcp?style=social)](https://github.com/enkhbold470/bci-mcp/stargazers)
 [![Last commit](https://img.shields.io/github/last-commit/enkhbold470/bci-mcp)](https://github.com/enkhbold470/bci-mcp/commits/main)
 
