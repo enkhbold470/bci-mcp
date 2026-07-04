@@ -32,10 +32,13 @@ Specs and implementation plans live under `docs/superpowers/`.
 
 ## Releases (PyPI + npm)
 
-Publishing is tag-driven. Bump **both** versions to the same value:
+Publishing is tag-driven. Bump **all three** versions to the same value:
 
 - `pyproject.toml` → `version = "X.Y.Z"`
 - `npm/bci-mcp/package.json` → `"version": "X.Y.Z"`
+- `server.json` → top-level `"version"` **and** each `packages[].version` (for the [MCP registry](#mcp-registry))
+
+`publish.yml` hard-fails the release if any of these disagree with the tag.
 
 Then:
 
@@ -61,3 +64,23 @@ Optional **environments** `pypi` and `npm` in GitHub for approval gates.
 | Repository | `bci-mcp` |
 | Workflow | `publish.yml` |
 | Environment | `pypi` |
+
+### MCP registry
+
+The server is described by [`server.json`](server.json) (schema: `server.schema.json`) for the
+[official MCP registry](https://registry.modelcontextprotocol.io). Ownership is proven by two
+markers that ship with the published packages, so they must stay in sync with `server.json`'s
+`name` (`io.github.enkhbold470/bci-mcp`):
+
+- **npm** — `"mcpName"` in `npm/bci-mcp/package.json`.
+- **PyPI** — the `<!-- mcp-name: io.github.enkhbold470/bci-mcp -->` comment at the top of `README.md`
+  (PyPI uses the README as the package description).
+
+Publishing to the registry is a separate, one-time-then-per-release step using the official CLI
+([install guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md)).
+Run it **after** the PyPI + npm release so the referenced package versions already exist:
+
+```bash
+mcp-publisher login github      # GitHub device-flow auth; name must be io.github.enkhbold470/*
+mcp-publisher publish           # reads ./server.json
+```
