@@ -19,9 +19,15 @@ jobs:
           TAG="${GITHUB_REF#refs/tags/v}"
           PY="$(grep '^version = ' pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')"
           NPM="$(node -p "require('./npm/bci-mcp/package.json').version")"
-          echo "tag=v${TAG} pyproject=${PY} npm=${NPM}"
+          SRV="$(node -p "require('./server.json').version")"
+          SRV_PKGS="$(node -p "require('./server.json').packages.map(p => p.version).join(' ')")"
+          echo "tag=v${TAG} pyproject=${PY} npm=${NPM} server.json=${SRV} (${SRV_PKGS})"
           test "$TAG" = "$PY" || { echo "pyproject.toml version must match tag"; exit 1; }
           test "$TAG" = "$NPM" || { echo "npm/bci-mcp/package.json version must match tag"; exit 1; }
+          test "$TAG" = "$SRV" || { echo "server.json version must match tag"; exit 1; }
+          for v in $SRV_PKGS; do
+            test "$TAG" = "$v" || { echo "server.json packages[].version must match tag"; exit 1; }
+          done
 
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:

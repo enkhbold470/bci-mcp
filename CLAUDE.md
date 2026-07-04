@@ -107,7 +107,7 @@ All tests are **hardware-free**: synthetic device, recording playback, in-proces
 
 `.github/workflows/ci.yml` gates every push/PR across Python **3.10/3.11/3.12** (supported range) on, in order: `ruff check` → `pytest` → `mkdocs build --strict`, plus a separate `npm pack --dry-run` job. So a docs/mkdocs change that warns, or a broken npm launcher, fails CI even when pytest passes.
 
-**Releases are tag-driven and need a dual version bump.** `publish.yml` fires on `v*` tags and hard-fails unless the tag matches **both** `pyproject.toml` `version` **and** `npm/bci-mcp/package.json` `version`. Bump both to the same `X.Y.Z`, then tag. (Both are currently aligned at `0.2.0`.) Publishing is OIDC trusted publishing (PyPI via `uv publish`, npm via `npm publish --provenance`).
+**Releases are tag-driven and need a triple version bump.** `publish.yml` fires on `v*` tags and hard-fails unless the tag matches **all of** `pyproject.toml` `version`, `npm/bci-mcp/package.json` `version`, and `server.json` (`version` **and** every `packages[].version`). Bump all three to the same `X.Y.Z`, then tag. (All currently aligned at `0.2.0`.) Publishing is OIDC trusted publishing (PyPI via `uv publish`, npm via `npm publish --provenance`). `server.json` (MCP registry manifest) publishes separately via the `mcp-publisher` CLI — see CONTRIBUTING. Ownership markers that must track `server.json`'s `name`: `mcpName` in `npm/bci-mcp/package.json` and the `<!-- mcp-name: … -->` comment atop `README.md`.
 
 ## Architecture
 
