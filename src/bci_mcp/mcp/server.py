@@ -1,13 +1,18 @@
 """Real Model Context Protocol server exposing live brain state."""
 from __future__ import annotations
 
+import logging
 import os
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from .auth import TokenAuthMiddleware, configured_token
 from .service import BrainService
+
+_LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
 
 def _listen_host() -> str:
@@ -25,11 +30,33 @@ def _stateless_http() -> bool:
     return flag in {"1", "true", "yes"} or os.environ.get("MCP_ENV") == "production"
 
 
+def _transport_security() -> TransportSecuritySettings | None:
+    """DNS-rebinding protection (Host/Origin validation) for loopback binds.
+
+    A malicious web page can reach a localhost HTTP server through a rebinding
+    domain; restricting Host/Origin to localhost values blocks that. Cloud
+    deployments (non-loopback binds) are reached via arbitrary public
+    hostnames, so header validation stays off there — protect those with
+    MCP_AUTH_TOKEN instead.
+    """
+    if _listen_host() not in _LOOPBACK_HOSTS:
+        return None
+    bases = ["127.0.0.1", "localhost", "[::1]"]
+    hosts = [h for base in bases for h in (base, f"{base}:*")]
+    origins = [f"{scheme}://{h}" for scheme in ("http", "https") for h in hosts]
+    return TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=hosts,
+        allowed_origins=origins,
+    )
+
+
 mcp = FastMCP(
     "bci-mcp",
     host=_listen_host(),
     port=_listen_port(),
     stateless_http=_stateless_http(),
+    transport_security=_transport_security(),
 )
 _service = BrainService()
 
@@ -158,4 +185,24 @@ async def health_check(_request: Request) -> JSONResponse:
 def serve(transport: str = "stdio") -> None:
     if transport == "stdio" and os.environ.get("PORT"):
         transport = "streamable-http"
+    if transport in ("sse", "streamable-http"):
+        # Run the ASGI app ourselves (mirroring FastMCP.run's uvicorn config)
+        # so MCP_AUTH_TOKEN bearer auth wraps every HTTP transport.
+        import uvicorn
+
+        if mcp.settings.host not in _LOOPBACK_HOSTS and configured_token() is None:
+            logging.getLogger(__name__).warning(
+                "Serving MCP over HTTP on %s with no authentication — anyone who "
+                "can reach this host can read brain state and record EEG data. "
+                "Set MCP_AUTH_TOKEN to require a bearer token.",
+                mcp.settings.host,
+            )
+        asgi_app = mcp.sse_app() if transport == "sse" else mcp.streamable_http_app()
+        uvicorn.run(
+            TokenAuthMiddleware(asgi_app),
+            host=mcp.settings.host,
+            port=mcp.settings.port,
+            log_level=mcp.settings.log_level.lower(),
+        )
+        return
     mcp.run(transport=transport)

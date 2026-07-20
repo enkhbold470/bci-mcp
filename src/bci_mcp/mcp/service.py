@@ -1,17 +1,42 @@
 """Testable brain-service core. server.py adapts this to MCP."""
 from __future__ import annotations
 
+import math
+import threading
 import time
+from collections import deque
 
 from ..pipeline import Pipeline
 from ..recording.paths import safe_record_path, validate_mcp_uri
+
+# Untrusted MCP clients drive this service, so every argument is bounded:
+# durations are capped (the singleton blocks while recording/calibrating),
+# stored labels/events are capped (memory), and formats are allow-listed.
+MAX_RECORD_SECONDS = 3600.0
+MAX_CALIBRATE_SECONDS = 300.0
+MAX_LABEL_CHARS = 512
+MAX_EVENTS = 1000
+RECORD_FORMATS = ("npz", "csv", "edf")
+
+
+def _seconds_error(seconds: object, maximum: float) -> str | None:
+    try:
+        value = float(seconds)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return f"seconds must be a number, got {seconds!r}"
+    if not math.isfinite(value) or value <= 0:
+        return f"seconds must be a positive finite number, got {seconds!r}"
+    if value > maximum:
+        return f"seconds must be <= {maximum:g}, got {value:g}"
+    return None
 
 
 class BrainService:
     def __init__(self) -> None:
         self._pipeline: Pipeline | None = None
-        self._events: list[dict] = []
+        self._events: deque[dict] = deque(maxlen=MAX_EVENTS)
         self._nf = None
+        self._lock = threading.Lock()
 
     def list_devices(self) -> dict:
         from ..core.registry import discover, list_schemes
@@ -19,19 +44,31 @@ class BrainService:
         return {"devices": discover(), "schemes": list_schemes()}
 
     def connect(self, device_uri: str = "synthetic://") -> dict:
-        validate_mcp_uri(device_uri)
-        if self._pipeline is not None:
-            self._pipeline.stop()
-        self._pipeline = Pipeline(device_uri)
-        self._pipeline.start()
-        return {"connected": True, "device": self._pipeline.device.info.name,
-                "uri": device_uri}
+        try:
+            validate_mcp_uri(device_uri)
+        except ValueError as exc:
+            return {"error": str(exc)}
+        with self._lock:
+            if self._pipeline is not None:
+                self._pipeline.stop()
+                self._pipeline = None
+                self._nf = None
+            try:
+                pipeline = Pipeline(device_uri)
+                pipeline.start()
+            except Exception as exc:  # unknown board, bad params, missing extra…
+                return {"error": f"could not connect to '{device_uri}': {exc}"}
+            self._pipeline = pipeline
+            return {"connected": True, "device": pipeline.device.info.name,
+                    "uri": device_uri}
 
     def disconnect(self) -> dict:
-        if self._pipeline is not None:
-            self._pipeline.stop()
-            self._pipeline = None
-        return {"connected": False}
+        with self._lock:
+            if self._pipeline is not None:
+                self._pipeline.stop()
+                self._pipeline = None
+            self._nf = None
+            return {"connected": False}
 
     def get_brain_state(self) -> dict:
         if self._pipeline is None:
@@ -73,11 +110,18 @@ class BrainService:
     def calibrate(self, seconds: int = 20, condition: str = "relax") -> dict:
         if self._pipeline is None:
             return {"error": "not connected"}
-        cal = self._pipeline.calibrate(seconds=seconds)
+        err = _seconds_error(seconds, MAX_CALIBRATE_SECONDS)
+        if err is not None:
+            return {"error": err}
+        if len(condition) > MAX_LABEL_CHARS:
+            return {"error": f"condition must be <= {MAX_LABEL_CHARS} characters"}
+        cal = self._pipeline.calibrate(seconds=float(seconds))
         return {"calibrated": cal.calibrated, "condition": condition,
                 "metrics": list(cal.baseline)}
 
     def mark_event(self, label: str) -> dict:
+        if len(label) > MAX_LABEL_CHARS:
+            return {"error": f"label must be <= {MAX_LABEL_CHARS} characters"}
         self._events.append({"label": label, "timestamp": time.time()})
         return {"marked": label, "total_events": len(self._events)}
 
@@ -96,16 +140,37 @@ class BrainService:
                fmt: str | None = None) -> dict:
         if self._pipeline is None:
             return {"error": "not connected"}
+        err = _seconds_error(seconds, MAX_RECORD_SECONDS)
+        if err is not None:
+            return {"error": err}
+        effective_fmt = (fmt or str(path).rsplit(".", 1)[-1]).lower()
+        if effective_fmt not in RECORD_FORMATS:
+            return {"error": f"unsupported recording format '{effective_fmt}' — "
+                             f"use one of: {', '.join(RECORD_FORMATS)}"}
         try:
             safe_path = safe_record_path(path)
         except ValueError as exc:
             return {"error": str(exc)}
-        out = self._pipeline.record(seconds=seconds, path=safe_path, fmt=fmt)
-        return {"recorded": True, "path": out, "seconds": seconds}
+        try:
+            out = self._pipeline.record(seconds=float(seconds), path=safe_path, fmt=fmt)
+        except Exception as exc:  # e.g. missing optional writer backend (pyedflib)
+            return {"error": f"recording failed: {exc}"}
+        return {"recorded": True, "path": out, "seconds": float(seconds)}
 
     def start_neurofeedback(self, metric: str = "focus", target: float = 0.7) -> dict:
         if self._pipeline is None:
             return {"error": "not connected"}
+        from ..dsp.metrics import METRIC_INFO
+
+        if metric not in METRIC_INFO:
+            return {"error": f"unknown metric '{metric}' — "
+                             f"use one of: {', '.join(sorted(METRIC_INFO))}"}
+        try:
+            target = float(target)
+        except (TypeError, ValueError):
+            return {"error": f"target must be a number, got {target!r}"}
+        if not math.isfinite(target):
+            return {"error": "target must be a finite number"}
         from ..neurofeedback.trainer import NeurofeedbackSession
 
         self._nf = NeurofeedbackSession(self._pipeline, metric=metric, target=target)
