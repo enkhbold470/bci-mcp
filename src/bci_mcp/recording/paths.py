@@ -24,11 +24,13 @@ def safe_record_path(path: str) -> str:
     else:
         # Strip any directory components from relative paths — use name only.
         resolved = (allowed / p.name).resolve()
-    if not str(resolved).startswith(str(allowed) + os.sep) and resolved != allowed:
+    if not str(resolved).startswith(str(allowed) + os.sep):
         raise ValueError(
             f"Recording path '{path}' is outside the allowed directory '{allowed}'. "
             f"Set BCI_RECORD_DIR to change the allowed directory."
         )
+    if resolved.is_dir():
+        raise ValueError(f"Recording path '{path}' is a directory, not a file.")
     resolved.parent.mkdir(parents=True, exist_ok=True)
     return str(resolved)
 
