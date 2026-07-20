@@ -54,6 +54,7 @@ $ bci-mcp stream --device synthetic://
 - [How it fits together](#how-it-fits-together)
 - [Install extras](#install-extras)
 - [Troubleshooting devices](#troubleshooting-devices)
+- [Security](#security)
 - [Docs and accuracy](#docs-and-accuracy)
 - [Contributors](#contributors)
 - [Contributing](#contributing)
@@ -359,6 +360,10 @@ Start with the synthetic device — if `synthetic://` works, the MCP + DSP stack
 | `warming_up` on the first read | Normal — the pipeline needs ~0.5 s of samples. Read again in a moment. |
 
 Over MCP, only `synthetic`, `brainflow`, `lsl`, and `neurofocus` URIs are allowed; `playback://` and `serial://` are rejected because they grant filesystem/device access to the client.
+
+## Security
+
+EEG is biometric data, so the server treats every MCP tool argument and HTTP request as untrusted: recordings are sandboxed to `BCI_RECORD_DIR`, filesystem-touching device URIs (`playback://`, `serial://`) are refused over MCP, tool inputs are validated and capped, and the dashboard blocks cross-site WebSocket reads and DNS rebinding. Serving MCP over HTTP on a public host? Set `MCP_AUTH_TOKEN` and clients must send `Authorization: Bearer <token>`. Details and reporting: [SECURITY.md](SECURITY.md).
 
 ## Docs and accuracy
 

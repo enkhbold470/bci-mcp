@@ -46,7 +46,8 @@ src/bci_mcp/
 ├── mcp/
 │   ├── server.py          # FastMCP tools/resources/prompt + serve()
 │   ├── service.py         # BrainService — testable core (server.py wraps this)
-│   └── http_app.py        # `app = mcp.streamable_http_app()` — ASGI entrypoint (serves /mcp)
+│   ├── auth.py            # TokenAuthMiddleware — optional MCP_AUTH_TOKEN bearer auth
+│   └── http_app.py        # ASGI entrypoint (serves /mcp), wrapped in TokenAuthMiddleware
 ├── recording/
 │   ├── recorder.py        # Recorder stream consumer
 │   ├── writer.py          # save_recording() — npz/csv/edf
@@ -59,7 +60,7 @@ src/bci_mcp/
     └── static/index.html  # dashboard UI (served at /)
 ```
 
-`recording/paths.py` is **security-critical**: `safe_record_path()` sandboxes all MCP recording I/O to `$BCI_RECORD_DIR` (default `~/bci-recordings`) and rejects path traversal; `validate_mcp_uri()` + `MCP_ALLOWED_SCHEMES = {synthetic, brainflow, lsl, neurofocus}` reject `playback://`/`serial://` over MCP (they grant filesystem/device access). Both are enforced in `mcp/service.py` (`connect`, `record`).
+`recording/paths.py` is **security-critical**: `safe_record_path()` sandboxes all MCP recording I/O to `$BCI_RECORD_DIR` (default `~/bci-recordings`) and rejects path traversal (incl. symlink escapes and directory targets); `validate_mcp_uri()` + `MCP_ALLOWED_SCHEMES = {synthetic, brainflow, lsl, neurofocus}` reject `playback://`/`serial://` over MCP (they grant filesystem/device access). Both are enforced in `mcp/service.py` (`connect`, `record`), which additionally treats every MCP tool argument as untrusted: durations are validated and capped (`MAX_RECORD_SECONDS`/`MAX_CALIBRATE_SECONDS`), recording formats and neurofeedback metrics are allowlisted, event labels/list are size-capped, and `connect`/`record` return `{"error": ...}` dicts instead of raising. See `SECURITY.md` for the full threat model.
 
 **Repo-root deploy glue (not in the wheel):** `src/server.py` + `src/__init__.py` re-export the ASGI app for `uvicorn src.server:app` in a checkout. The wheel ships only `src/bci_mcp` (`[tool.hatch.build.targets.wheel]`), so edits to `src/server.py` do **not** affect the installed package.
 
@@ -146,7 +147,7 @@ Every device backend calls `bci_mcp.core.registry.register(scheme, factory)` at 
 
 ## Deployment & transports
 
-`bci-mcp serve --transport {stdio|sse|streamable-http}` (default `stdio`; `bci-mcp mcp` is an alias). stdio is for local Claude Desktop/Code; **streamable-http** serves MCP at `/mcp` plus a non-MCP `GET /health` → `{"status":"healthy"}`. The ASGI `app` object is built once in `mcp/http_app.py` (`app = mcp.streamable_http_app()`) and re-exported as **`bci_mcp:app`** (canonical, works from the installed wheel — point uvicorn here) and `src.server:app` (checkout only).
+`bci-mcp serve --transport {stdio|sse|streamable-http}` (default `stdio`; `bci-mcp mcp` is an alias). stdio is for local Claude Desktop/Code; **streamable-http** serves MCP at `/mcp` plus a non-MCP `GET /health` → `{"status":"healthy"}`. The ASGI `app` object is built once in `mcp/http_app.py` (the streamable-HTTP app wrapped in `TokenAuthMiddleware`) and re-exported as **`bci_mcp:app`** (canonical, works from the installed wheel — point uvicorn here) and `src.server:app` (checkout only). `serve()` applies the same auth wrapper to its sse/streamable-http paths, and loopback binds get SDK DNS-rebinding protection (Host/Origin validation).
 
 **Env vars reconfigure the running server** (read in `mcp/server.py`):
 
@@ -157,6 +158,7 @@ Every device backend calls `bci_mcp.core.registry.register(scheme, factory)` at 
 | `FASTMCP_HOST` / `FASTMCP_PORT` | Explicit host/port. |
 | `FASTMCP_STATELESS_HTTP` | Stateless HTTP sessions. |
 | `BCI_RECORD_DIR` | Output dir for the `record` tool (Docker sets `/data`). |
+| `MCP_AUTH_TOKEN` | When set, HTTP transports require `Authorization: Bearer <token>` on every request except `GET /health` (`mcp/auth.py`). Unset = open; `serve()` warns when binding non-loopback without it. |
 
 **Deploy targets each build differently:**
 
