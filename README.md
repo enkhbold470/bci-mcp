@@ -55,6 +55,7 @@ $ bci-mcp stream --device synthetic://
 - [Install extras](#install-extras)
 - [Troubleshooting devices](#troubleshooting-devices)
 - [Security](#security)
+- [FAQ](#faq)
 - [Docs and accuracy](#docs-and-accuracy)
 - [Contributors](#contributors)
 - [Contributing](#contributing)
@@ -364,6 +365,28 @@ Over MCP, only `synthetic`, `brainflow`, `lsl`, and `neurofocus` URIs are allowe
 ## Security
 
 EEG is biometric data, so the server treats every MCP tool argument and HTTP request as untrusted: recordings are sandboxed to `BCI_RECORD_DIR`, filesystem-touching device URIs (`playback://`, `serial://`) are refused over MCP, tool inputs are validated and capped, and the dashboard blocks cross-site WebSocket reads and DNS rebinding. Serving MCP over HTTP on a public host? Set `MCP_AUTH_TOKEN` and clients must send `Authorization: Bearer <token>`. Details and reporting: [SECURITY.md](SECURITY.md).
+
+## FAQ
+
+**How do you know what signal pattern means focus, calm, attention?**
+
+These are not guesses. Each metric is a ratio of EEG frequency band powers, taken from published research. A few examples:
+
+- `focus` = beta / (alpha + theta) — the Pope et al. (1995) engagement index
+- `calm` = alpha / (alpha + beta) — alpha up, beta down, a long-known relaxation correlate
+- `attention` = beta / theta — the inverse theta/beta ratio (Lubar 1991; Monastra 1999)
+
+The full list, with every formula, the paper it comes from, and an honest caveat, lives in [`metrics.py`](src/bci_mcp/dsp/metrics.py). Claude can pull the same table at runtime with the `get_metric_definitions` tool, so it never has to invent what a number means.
+
+To be clear: these are proxies, not clinical measurements. Band-power ratios drift with electrode contact, eye movement, and jaw tension. Treat them as rough signals for demos and neurofeedback, and read the math in the source if you want to check it.
+
+**Aren't LLMs a bad fit for live EEG inference?**
+
+Yes, and this project does not do that. The language model does zero signal processing.
+
+All the EEG math is plain, deterministic Python: notch filter, bandpass, Welch PSD, then the fixed band-power ratios above. Same input gives the same numbers every time, no model in the loop. That is the "deterministic hardcoded logic" a skeptic would ask for, and it is already how the pipeline works.
+
+The LLM sits on top as a conversation layer. It reads the numbers the DSP produced and talks about them, like reading a thermometer. It never classifies raw EEG and never decides what counts as focus. So the split is: math in the code, words from the model.
 
 ## Docs and accuracy
 
