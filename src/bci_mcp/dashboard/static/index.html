@@ -18,6 +18,10 @@
   .band { flex:1; text-align:center; }
   .band .col { background:#2a3650; border-radius:4px 4px 0 0; transition:height .2s; }
   #signal { margin-top:1rem; font-size:0.9rem; }
+  .disclaimer { margin-top:1.5rem; padding:0.75rem 1rem; font-size:0.8rem;
+                line-height:1.45; color:#b6c0d4; background:#141a26;
+                border:1px solid #24304a; border-radius:8px; }
+  .disclaimer b { color:#e6e6e6; }
 </style>
 </head>
 <body>
@@ -26,6 +30,11 @@
   <div id="metrics"></div>
   <div class="bands" id="bands"></div>
   <div id="signal"></div>
+  <div class="disclaimer" id="disclaimer">
+    <b>Heuristic band-power proxies</b> — not clinical, diagnostic, or event-level EEG.
+    Welch PSD averages transients out (no ERPs, spindles, or bursts). Weight readings
+    by confidence and treat an unreliable signal as untrustworthy.
+  </div>
 <script>
 const METRICS = ["focus","calm","attention","engagement","fatigue","meditation"];
 const BANDS = ["delta","theta","alpha","beta","gamma"];

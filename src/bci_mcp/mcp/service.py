@@ -74,7 +74,15 @@ class BrainService:
         if self._pipeline is None:
             return {"error": "not connected — call connect() first"}
         state = self._pipeline.current_state()
-        return state.to_dict() if state is not None else {"status": "warming_up"}
+        if state is None:
+            return {"status": "warming_up"}
+        from ..dsp.limitations import SHORT_DISCLAIMER
+
+        d = state.to_dict()
+        # Inline disclaimer so a model that reads the state without first
+        # calling get_metric_definitions still knows these are proxies.
+        d["disclaimer"] = SHORT_DISCLAIMER
+        return d
 
     def get_band_powers(self) -> dict:
         state = self.get_brain_state()
@@ -95,17 +103,30 @@ class BrainService:
                 "status": state["status"]}
 
     def get_metric_definitions(self) -> dict:
+        from ..dsp.limitations import pipeline_limitations
         from ..dsp.metrics import METRIC_INFO
 
+        info = pipeline_limitations()
         return {
             "metrics": METRIC_INFO,
+            "method": info["method"],
+            "limitations": info["limitations"],
+            "intended_use": info["intended_use"],
             "disclaimer": (
                 "These are heuristic EEG band-power ratios, not validated "
                 "clinical measurements. Weight them by the `confidence` and "
                 "`metric_confidence` fields, treat `status` == 'unreliable' as "
-                "untrustworthy, and calibrate for personalized 0-1 scaling."
+                "untrustworthy, and calibrate for personalized 0-1 scaling. See "
+                "`limitations` for what this pipeline cannot do (e.g. it averages "
+                "transients out and is not a clinical/qEEG tool)."
             ),
         }
+
+    def get_pipeline_limitations(self) -> dict:
+        """What the pipeline is and is not — method, limits, intended use."""
+        from ..dsp.limitations import pipeline_limitations
+
+        return pipeline_limitations()
 
     def calibrate(self, seconds: int = 20, condition: str = "relax") -> dict:
         if self._pipeline is None:
@@ -134,7 +155,8 @@ class BrainService:
                 "metric_confidence": state["metric_confidence"],
                 "confidence": state["confidence"],
                 "signal_quality": state["signal_quality"],
-                "status": state["status"]}
+                "status": state["status"],
+                "disclaimer": state["disclaimer"]}
 
     def record(self, seconds: float = 10.0, path: str = "session.npz",
                fmt: str | None = None) -> dict:

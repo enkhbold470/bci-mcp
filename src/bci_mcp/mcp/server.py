@@ -113,6 +113,17 @@ def get_metric_definitions() -> dict:
 
 
 @mcp.tool()
+def get_pipeline_limitations() -> dict:
+    """What this pipeline can and cannot do: the exact analysis method (Welch PSD
+    window, band edges, filters), a plain-English list of limitations (it averages
+    transients out, is not clinical/qEEG, metrics are heuristic proxies, no source
+    localization/connectivity), and its intended use. Read this before drawing any
+    conclusion from the metrics — especially do not present them as clinical,
+    diagnostic, or event-level (ERP/spindle) results."""
+    return _service.get_pipeline_limitations()
+
+
+@mcp.tool()
 def calibrate(seconds: int = 20, condition: str = "relax") -> dict:
     """Capture a baseline so focus/calm/etc. are personalized to the wearer."""
     return _service.calibrate(seconds, condition)
@@ -153,9 +164,13 @@ def interpret_brain_state() -> str:
         "validated cognitive measurements: weight them by the `confidence` / "
         "`metric_confidence` fields and the `signal_quality`/`status`. If status "
         "is 'unreliable' or confidence is low, say the reading can't be trusted "
-        "rather than interpreting it. Otherwise explain in plain language what "
-        "the wearer's focus, calm, and attention levels *suggest* (not prove) "
-        "about their state, and offer one actionable tip."
+        "rather than interpreting it. Be explicit about the pipeline's limits "
+        "(see get_pipeline_limitations): it averages transients out (no ERPs/"
+        "spindles/bursts) and is a continuous consumer-grade band-power monitor, "
+        "not a clinical/qEEG tool — never imply diagnostic or event-level "
+        "meaning. Otherwise explain in plain language what the wearer's focus, "
+        "calm, and attention levels *suggest* (not prove) about their state, and "
+        "offer one actionable tip."
     )
 
 

@@ -40,6 +40,7 @@ src/bci_mcp/
 │   ├── filters.py         # notch + bandpass (zero-phase, scipy.signal.filtfilt)
 │   ├── bands.py           # band_powers() via Welch PSD, relative_band_powers()
 │   ├── metrics.py         # raw_metrics() + METRIC_INFO (formula/literature/caveat per metric)
+│   ├── limitations.py     # single source of truth for pipeline scope/limits (honesty text)
 │   ├── state.py           # BrainState dataclass (incl. confidence + status)
 │   ├── quality.py         # assess_quality() — signal score + HARD_ARTIFACTS flags
 │   └── calibration.py     # Calibration — personalized z-score / default sigmoid scaling
@@ -132,6 +133,7 @@ Consumers: CLI brain-meter, FastMCP server, FastAPI dashboard,
 - **Warming-up & status.** `current_state()` returns `None` until the buffer has `max(int(0.5·fs), 64)` samples; `BrainService` maps that to `{"status": "warming_up"}`. So `warming_up` is a **service-layer sentinel** — `BrainState.status` itself is only ever `"ok"` or `"unreliable"` (forced unreliable by a hard artifact like flatline/railing or `signal_quality=="poor"`).
 - **Confidence.** `confidence = clamp(quality_score × cal_factor × fill, 0, 1)` with `cal_factor = 1.0` calibrated / `0.6` not, `fill = min(1, samples/window)`; capped at `0.1` when unreliable. `metric_confidence` is currently this single scalar copied to every metric key (uniform, not per-metric).
 - **Metrics use only θ/α/β.** delta & gamma are excluded from every metric (EMG/drift-dominated) but still reported as raw band powers. `focus=β/(α+θ)`, `engagement=β/α` (a distinct ratio, *not* a duplicate of focus), `calm=α/(α+β)`, `attention=β/θ`, `fatigue=(θ+α)/β`, `meditation=α/(α+β+θ)`. Full formula + literature + caveat per metric live in `metrics.METRIC_INFO`, surfaced by the `get_metric_definitions` MCP tool.
+- **Honesty is centralized in `dsp/limitations.py`.** It is the single source of truth for what the pipeline can't do (Welch PSD averages transients out — no ERPs/spindles/bursts; consumer-grade bands, not clinical/qEEG; heuristic proxies; no source localization/connectivity). Every result surface pulls from it: `get_metric_definitions` and the new `get_pipeline_limitations` tool carry the full `method`+`limitations`; `get_brain_state`/`stream_summary` attach the one-line `disclaimer`; the `interpret_brain_state` prompt tells the model to state the limits; the CLI `stream` shows a caveat footer; the dashboard shows a banner + `/api/info`. Edit the text there, not at each call site.
 - **Calibration is two-path.** Uncalibrated: logistic over `metrics.DEFAULT_SCALING` (bounded metrics centered 0.5, unbounded ratios centered 1.0). Calibrated: per-metric z-score (clamped ±60) from a baseline built by `Pipeline.calibrate(seconds=20)`.
 
 ## Device URI registry
@@ -142,7 +144,7 @@ Every device backend calls `bci_mcp.core.registry.register(scheme, factory)` at 
 
 `bci_mcp.mcp.server` uses `FastMCP` from the official MCP Python SDK. `server.py` is a thin adapter: each `@mcp.tool()` is a one-line delegate to a module-level singleton `_service = BrainService()` (`service.py`), so the server holds **exactly one** live Pipeline/connection at a time (`connect()` stops any prior one). `BrainService` never raises for control flow — it returns sentinel dicts (`{"error": ...}` when not connected, `{"status": "warming_up"}` before the first reading); derived tools detect this via `if "metrics" not in state`. **Tests target `BrainService` directly** (no transport needed) — put testable logic there, wiring in `server.py`.
 
-- **Tools (13):** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `get_metric_definitions`, `calibrate`, `mark_event`, `stream_summary`, `record`, `start_neurofeedback`, `get_neurofeedback_score`.
+- **Tools (14):** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `get_metric_definitions`, `get_pipeline_limitations`, `calibrate`, `mark_event`, `stream_summary`, `record`, `start_neurofeedback`, `get_neurofeedback_score`.
 - **Resources:** `brain://state`, `brain://device`. **Prompt:** `interpret_brain_state`.
 
 ## Deployment & transports
