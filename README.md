@@ -371,7 +371,7 @@ Docs: [enkhbold470.github.io/bci-mcp](https://enkhbold470.github.io/bci-mcp/)
 
 Questions about the code: [DeepWiki](https://deepwiki.com/enkhbold470/bci-mcp). Agents: [`llms.txt`](https://enkhbold470.github.io/bci-mcp/llms.txt).
 
-**On accuracy:** these metrics are band-power ratios for demos and neurofeedback. Not clinical. Not diagnosis. Each formula is in the source if you want to check the math.
+**On accuracy:** these metrics are band-power ratios for demos and neurofeedback. Not clinical. Not diagnosis. Each formula is in the source if you want to check the math. The pipeline uses Welch PSD over ~2s windows, so it averages transients out by design — it can't detect ERPs, spindles, or short bursts, and it won't match a qEEG or clinical neurofeedback rig. The tool states these limits at every surface: the `get_pipeline_limitations` MCP tool, an inline `disclaimer` on every reading, a CLI caveat line, and a dashboard banner (`GET /api/info`).
 
 **Disclaimer:** research and personal use only. Not a medical device.
 
