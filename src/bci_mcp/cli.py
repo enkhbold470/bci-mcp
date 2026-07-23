@@ -42,6 +42,10 @@ def _render(state: BrainState | None) -> Table:
     table.add_row("signal", state.signal_quality, f"{state.quality_score:.2f}")
     conf_note = state.status if state.status != "ok" else ""
     table.add_row("confidence", f"{state.confidence:.2f}", conf_note)
+    table.caption = (
+        "heuristic band-power proxies · not clinical · transients averaged out"
+    )
+    table.caption_style = "dim"
     return table
 
 

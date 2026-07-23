@@ -66,6 +66,17 @@ Delta and gamma are deliberately **excluded** from every metric: on consumer har
 
 All metrics are then passed through `Calibration.apply()`, which rescales each to 0–1. With a personal baseline it uses a per-metric z-score; **uncalibrated**, it uses a per-metric default center (bounded metrics like `calm`/`meditation` are centered at 0.5, unbounded ratios at 1.0) so bounded metrics can still read high without calibration.
 
+## Limitations (`bci_mcp.dsp.limitations`)
+
+The estimator has hard limits, and the package states them the same way everywhere from a single source of truth (`dsp/limitations.py`):
+
+- **Transient-blind.** Welch PSD averages power over the whole window, so event-level activity (ERPs, sleep spindles, K-complexes, short bursts, epileptiform spikes) is averaged out and cannot be detected. This is not a time-resolved / event-related tool — that would need epoching plus time-frequency analysis upstream.
+- **Not clinical.** Band edges and filtering are standard consumer-grade settings, not a qEEG or clinical-neurofeedback montage.
+- **Proxies, not measurements.** The metrics are band-power ratios from the literature, not validated readouts of the named cognitive states.
+- **No source localization / connectivity**, and the LLM only ever sees the computed scalar metrics — never raw samples — so it cannot recover anything the band-power step discarded.
+
+These are surfaced to consumers via the `get_pipeline_limitations` and `get_metric_definitions` MCP tools, an inline `disclaimer` on every reading, the CLI caveat line, and the dashboard banner / `GET /api/info`.
+
 ## Signal quality (`bci_mcp.dsp.quality`)
 
 `assess_quality(data, fs)` returns `(score: float, label: str, artifacts: list[str])`:

@@ -74,6 +74,12 @@ def create_app(pipeline: Pipeline, *, extra_allowed_hosts: Iterable[str] = (),
         s = pipeline.current_state()
         return s.to_dict() if s is not None else {"status": "warming_up"}
 
+    @app.get("/api/info")
+    def info() -> dict:
+        from ..dsp.limitations import pipeline_limitations
+
+        return pipeline_limitations()
+
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:
         host_header = websocket.headers.get("host", "")
