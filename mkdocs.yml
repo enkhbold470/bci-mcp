@@ -44,6 +44,7 @@ nav:
       - MCP & Devices: api/mcp-module.md
   - Contributing: contributing.md
   - Changelog: changelog.md
+  - Security: security.md
 
 plugins:
   - search
@@ -65,6 +66,8 @@ hooks:
 exclude_docs: |
   superpowers/**
   github-topics.md
+  agents.md
+  claude.md
 
 extra:
   deepwiki_url: https://deepwiki.com/enkhbold470/bci-mcp

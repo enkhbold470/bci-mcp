@@ -1,0 +1,8 @@
+---
+description: Agent instructions for git commits and project conventions
+alwaysApply: true
+---
+
+Read [docs/agents.md](../../docs/agents.md) before making git commits or opening PRs.
+
+For architecture and package layout, see [docs/claude.md](../../docs/claude.md).

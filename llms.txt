@@ -19,6 +19,7 @@
 - [Documentation site](https://enkhbold470.github.io/bci-mcp/): Human-readable docs (MkDocs).
 - [Contributing](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/contributing.md): How to run tests and open a pull request.
 - [Changelog](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/changelog.md): Release history.
+- [Security](https://raw.githubusercontent.com/enkhbold470/bci-mcp/main/docs/security.md): Threat model and vulnerability reporting.
 
 ## Interactive
 

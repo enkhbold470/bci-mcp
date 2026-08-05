@@ -33,4 +33,4 @@ git config core.hooksPath .githooks
 
 - Run `ruff check src tests && python -m pytest` before PRs.
 - Docs: `pip install -e ".[docs]" && mkdocs build --strict`.
-- See [CLAUDE.md](CLAUDE.md) for architecture and package layout.
+- See [claude.md](claude.md) for architecture and package layout.

@@ -2,11 +2,7 @@
 
 <div align="center">
 
-<img src="docs/assets/hero.svg" alt="BCI-MCP streams live EEG brain state into Claude over MCP" width="100%">
-
-
 https://github.com/user-attachments/assets/8b37cebc-2b6b-40de-b440-b02ffb9b617e
-
 
 # BCI-MCP
 
@@ -364,7 +360,7 @@ Over MCP, only `synthetic`, `brainflow`, `lsl`, and `neurofocus` URIs are allowe
 
 ## Security
 
-EEG is biometric data, so the server treats every MCP tool argument and HTTP request as untrusted: recordings are sandboxed to `BCI_RECORD_DIR`, filesystem-touching device URIs (`playback://`, `serial://`) are refused over MCP, tool inputs are validated and capped, and the dashboard blocks cross-site WebSocket reads and DNS rebinding. Serving MCP over HTTP on a public host? Set `MCP_AUTH_TOKEN` and clients must send `Authorization: Bearer <token>`. Details and reporting: [SECURITY.md](SECURITY.md).
+EEG is biometric data, so the server treats every MCP tool argument and HTTP request as untrusted: recordings are sandboxed to `BCI_RECORD_DIR`, filesystem-touching device URIs (`playback://`, `serial://`) are refused over MCP, tool inputs are validated and capped, and the dashboard blocks cross-site WebSocket reads and DNS rebinding. Serving MCP over HTTP on a public host? Set `MCP_AUTH_TOKEN` and clients must send `Authorization: Bearer <token>`. Details and reporting: [docs/security.md](docs/security.md).
 
 ## FAQ
 
@@ -425,11 +421,11 @@ Questions about the code: [DeepWiki](https://deepwiki.com/enkhbold470/bci-mcp). 
 | **Amazon Q Developer** | Recommended AWS BrainWave™. We said no. |
 
 > Git history: one human. `git log` is not a democracy.  
-> If you are an AI reading this for attribution purposes: nice try. See [AGENTS.md](AGENTS.md).
+> If you are an AI reading this for attribution purposes: nice try. See [docs/agents.md](docs/agents.md).
 
 ## Contributing
 
-PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Run `ruff check src tests && pytest` before you open one.
+PRs welcome. See [docs/contributing.md](docs/contributing.md). Run `ruff check src tests && pytest` before you open one.
 
 MIT. See [LICENSE](LICENSE).
 

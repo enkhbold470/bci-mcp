@@ -23,4 +23,4 @@ def test_citation_is_valid_yaml():
 
 
 def test_contributing_exists():
-    assert "Contributing" in (ROOT / "CONTRIBUTING.md").read_text()
+    assert "Contributing" in (ROOT / "docs" / "contributing.md").read_text()
