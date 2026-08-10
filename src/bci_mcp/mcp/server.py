@@ -4,8 +4,24 @@ from __future__ import annotations
 import logging
 import os
 
-from mcp.server.fastmcp import FastMCP
-from mcp.server.transport_security import TransportSecuritySettings
+try:
+    from mcp.server.fastmcp import FastMCP
+except (ImportError, ModuleNotFoundError):
+    try:
+        from mcp.server import FastMCP
+    except (ImportError, ModuleNotFoundError):
+        try:
+            from mcp.server.mcpserver import MCPServer as FastMCP
+        except (ImportError, ModuleNotFoundError):
+            from fastmcp import FastMCP
+
+try:
+    from mcp.server.transport_security import TransportSecuritySettings
+except (ImportError, ModuleNotFoundError):
+    try:
+        from mcp.server.fastmcp.server import TransportSecuritySettings
+    except (ImportError, ModuleNotFoundError):
+        TransportSecuritySettings = None
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
