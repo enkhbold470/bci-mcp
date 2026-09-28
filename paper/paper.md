@@ -9,7 +9,6 @@ tags:
   - neurofeedback
 authors:
   - name: Enkhbold Ganbold
-    orcid: 0000-0000-0000-0000  # TODO: replace with your ORCID iD before submitting
     affiliation: 1
 affiliations:
   - name: Independent researcher, United States
@@ -78,7 +77,7 @@ The `paper/benchmarks/` directory reproduces four checks of the released code. (
 On synthetic signals with a known alpha/beta trade-off, all six metrics are monotonic
 in the generator parameter (Spearman $|\rho| = 0.996$). (2) On the eyes-open and
 eyes-closed baselines of 109 subjects in the PhysioNet EEG Motor Movement/Imagery
-Dataset [@schalk2004; @goldberger2000], the uncalibrated `calm` metric on O1/Oz/O2
+Dataset [@eegmmidb; @schalk2004; @goldberger2000], the uncalibrated `calm` metric on O1/Oz/O2
 rises with eyes closed in 105 of 109 subjects (Wilcoxon $p = 3\times10^{-19}$),
 recovering the Berger effect [@berger1929; @barry2007]. (3) Injected flatline,
 railing, EMG-like and blink artifacts are flagged above fixed amplitude thresholds.
