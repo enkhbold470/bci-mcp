@@ -1,0 +1,73 @@
+{
+  "environment": {
+    "cpu": "Apple M5 Pro",
+    "os": "Darwin 27.0.0",
+    "python": "3.12.13",
+    "packages": {
+      "bci-mcp": "0.2.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "mcp": "1.30.0",
+      "pyedflib": "0.1.42"
+    },
+    "git_commit": "7025db8"
+  },
+  "window_seconds": 2.0,
+  "results": [
+    {
+      "channels": 1,
+      "sample_rate": 256.0,
+      "window_samples": 512,
+      "reps": 2000,
+      "median_ms": 0.30166699434630573,
+      "p95_ms": 0.33130031515611336,
+      "p99_ms": 0.393885001540184,
+      "mean_ms": 0.3048405035515316,
+      "label": "1 ch @ 256 Hz"
+    },
+    {
+      "channels": 4,
+      "sample_rate": 256.0,
+      "window_samples": 512,
+      "reps": 2000,
+      "median_ms": 0.35370800469536334,
+      "p95_ms": 0.46079163585090993,
+      "p99_ms": 0.6251022822107187,
+      "mean_ms": 0.36831582730519585,
+      "label": "4 ch @ 256 Hz (Muse-like)"
+    },
+    {
+      "channels": 8,
+      "sample_rate": 250.0,
+      "window_samples": 500,
+      "reps": 2000,
+      "median_ms": 0.4217079986119643,
+      "p95_ms": 0.6790493949665687,
+      "p99_ms": 1.036090924462769,
+      "mean_ms": 0.46185536013217643,
+      "label": "8 ch @ 250 Hz (OpenBCI Cyton-like)"
+    },
+    {
+      "channels": 16,
+      "sample_rate": 125.0,
+      "window_samples": 250,
+      "reps": 2000,
+      "median_ms": 0.4142294928897172,
+      "p95_ms": 0.6977589553571303,
+      "p99_ms": 1.092669763311278,
+      "mean_ms": 0.4555996065028012,
+      "label": "16 ch @ 125 Hz (Cyton+Daisy-like)"
+    },
+    {
+      "channels": 64,
+      "sample_rate": 160.0,
+      "window_samples": 320,
+      "reps": 2000,
+      "median_ms": 0.9346459992229939,
+      "p95_ms": 1.1532503165653907,
+      "p99_ms": 1.5718883374938741,
+      "mean_ms": 0.9648319774569245,
+      "label": "64 ch @ 160 Hz (BCI2000 cap)"
+    }
+  ]
+}

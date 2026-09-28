@@ -43,3 +43,6 @@ site/
 # OS specific files
 .DS_Store
 Thumbs.dbgenerated-images/
+
+# paper benchmarks: downloaded PhysioNet EDF files
+paper/benchmarks/data/

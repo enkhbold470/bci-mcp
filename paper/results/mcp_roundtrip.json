@@ -1,0 +1,33 @@
+{
+  "environment": {
+    "cpu": "Apple M5 Pro",
+    "os": "Darwin 27.0.0",
+    "python": "3.12.13",
+    "packages": {
+      "bci-mcp": "0.2.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "mcp": "1.30.0",
+      "pyedflib": "0.1.42"
+    },
+    "git_commit": "7025db8"
+  },
+  "transport": "stdio",
+  "device": "synthetic://?seed=1 (4 ch @ 256 Hz, 32-sample chunks)",
+  "cold_start_ms": {
+    "runs": 10,
+    "median": 561.7028334963834,
+    "p95": 785.4443731048374
+  },
+  "tool_count": 14,
+  "tools_list_ms": 2.3015410115476698,
+  "connect_ms": 1.302749995375052,
+  "time_to_first_reading_ms": 387.4562910059467,
+  "get_brain_state": {
+    "calls": 500,
+    "median_ms": 1.3029165129410103,
+    "p95_ms": 2.338951453566551,
+    "p99_ms": 3.1572611522278744,
+    "median_payload_bytes": 1221.0
+  }
+}
