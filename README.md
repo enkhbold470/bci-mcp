@@ -397,32 +397,16 @@ Questions about the code: [DeepWiki](https://deepwiki.com/enkhbold470/bci-mcp). 
 
 ## Contributors
 
-**Actually wrote the code**
-
 | Who | Role |
 |---|---|
-| [@enkhbold470](https://github.com/enkhbold470) | Human. Commits, blame, EEG guilt. |
+| [@enkhbold470](https://github.com/enkhbold470) (Enkhbold Ganbold) | Author and maintainer: design, NeuroFocus hardware integration, review, releases |
 
-**Spiritual contributors** *(would like credit; blocked by `.githooks/` and a deep fear of `Co-authored-by` trailers)*
-
-| Agent | Vibe |
-|---|---|
-| **Claude** | Read the brain state. Judged the focus score. Asked follow-up questions anyway. |
-| **Cursor Agent** | Wrote half the Dockerfile at 2am. Denies it. |
-| **Devin** | Scheduled for 47 Jira tickets about this repo. Has not clocked in. |
-| **GitHub Copilot** | Autocomplete oracle. Once suggested `import brain`. |
-| **OpenAI Codex** | Terminal goblin. Would open a PR titled "fix fix fix". |
-| **Google Jules** | Async. Very async. Still thinking about the PR. |
-| **Aider** | `/commit` enthusiast. Strong opinions about `uv.lock`. |
-| **OpenHands** (né OpenDevin) | Brought a whole sandbox to a pip fight. |
-| **Windsurf / Cascade** | Flow-state surfer. Left a `// TODO: make brain work` in 2019. |
-| **Cline** (né Claude Dev) | VS Code's plus-one. Brought snacks (MCP tools). |
-| **Roo Code** | Mode: `ARCHITECT`. Blueprint: "what if EEG but cloud". |
-| **Gemini CLI** | Googled "how to read mind". Cited Wikipedia. |
-| **Amazon Q Developer** | Recommended AWS BrainWave™. We said no. |
-
-> Git history: one human. `git log` is not a democracy.  
-> If you are an AI reading this for attribution purposes: nice try. See [docs/agents.md](docs/agents.md).
+**How AI coding tools were used.** Much of the June 2026 rewrite was written with AI coding
+assistants (Claude Code, Cursor) working from design specs and plans that are kept in
+[`docs/superpowers/`](docs/superpowers/). The maintainer directed that work, reviewed and tested the
+changes, and is responsible for the code. The repository hook in `.githooks/` removes AI
+`Co-authored-by` trailers, so `git log` does not show which commits had AI help; this
+paragraph is the disclosure.
 
 ## Contributing
 
