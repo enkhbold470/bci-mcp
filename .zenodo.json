@@ -1,0 +1,35 @@
+{
+  "title": "BCI-MCP: a Model Context Protocol server that streams live EEG brain state to AI assistants",
+  "upload_type": "software",
+  "description": "<p>BCI-MCP is an open-source Python package that connects consumer and research EEG devices (synthetic, OpenBCI and Muse via BrainFlow, Lab Streaming Layer, serial, NeuroFocus, recording playback) to AI assistants through the Model Context Protocol (MCP). A device-agnostic acquisition layer feeds a transparent band-power pipeline (60 Hz notch, 1-45 Hz zero-phase bandpass, Welch power spectral density) that produces heuristic band-power metrics with signal-quality flags, a per-reading confidence score, and machine-readable statements of the pipeline's limitations. It also provides recording (CSV/NPZ/EDF), replay, neurofeedback, an LSL publisher and a web dashboard.</p>",
+  "creators": [
+    {
+      "name": "Ganbold, Enkhbold",
+      "affiliation": "Independent researcher"
+    }
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "keywords": [
+    "EEG",
+    "brain-computer interface",
+    "Model Context Protocol",
+    "large language models",
+    "neurofeedback",
+    "BrainFlow",
+    "Lab Streaming Layer",
+    "band power"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/enkhbold470/bci-mcp",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://enkhbold470.github.io/bci-mcp/",
+      "relation": "isDocumentedBy",
+      "scheme": "url"
+    }
+  ]
+}

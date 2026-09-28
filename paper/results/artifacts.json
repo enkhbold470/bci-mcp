@@ -1,0 +1,161 @@
+{
+  "environment": {
+    "cpu": "Apple M5 Pro",
+    "os": "Darwin 27.0.0",
+    "python": "3.12.13",
+    "packages": {
+      "bci-mcp": "0.2.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "mcp": "1.30.0",
+      "pyedflib": "0.1.42"
+    },
+    "git_commit": "7025db8"
+  },
+  "trials_per_cell": 300,
+  "sample_rate": 256.0,
+  "channels": 4,
+  "clean": {
+    "trials": 300,
+    "any_flag_rate": 0.0,
+    "unreliable_rate": 0.0
+  },
+  "injected": [
+    {
+      "artifact": "blink",
+      "amplitude_uv": 50,
+      "trials": 300,
+      "flag_rate": 0.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.6
+    },
+    {
+      "artifact": "blink",
+      "amplitude_uv": 100,
+      "trials": 300,
+      "flag_rate": 0.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.6
+    },
+    {
+      "artifact": "blink",
+      "amplitude_uv": 150,
+      "trials": 300,
+      "flag_rate": 0.6766666666666666,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.6
+    },
+    {
+      "artifact": "blink",
+      "amplitude_uv": 200,
+      "trials": 300,
+      "flag_rate": 1.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.6
+    },
+    {
+      "artifact": "blink",
+      "amplitude_uv": 300,
+      "trials": 300,
+      "flag_rate": 1.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.6
+    },
+    {
+      "artifact": "blink",
+      "amplitude_uv": 400,
+      "trials": 300,
+      "flag_rate": 1.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.6
+    },
+    {
+      "artifact": "emg",
+      "amplitude_uv": 10,
+      "trials": 300,
+      "flag_rate": 0.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.6
+    },
+    {
+      "artifact": "emg",
+      "amplitude_uv": 25,
+      "trials": 300,
+      "flag_rate": 0.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.6
+    },
+    {
+      "artifact": "emg",
+      "amplitude_uv": 50,
+      "trials": 300,
+      "flag_rate": 0.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.6
+    },
+    {
+      "artifact": "emg",
+      "amplitude_uv": 75,
+      "trials": 300,
+      "flag_rate": 1.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.45
+    },
+    {
+      "artifact": "emg",
+      "amplitude_uv": 100,
+      "trials": 300,
+      "flag_rate": 1.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.45
+    },
+    {
+      "artifact": "emg",
+      "amplitude_uv": 150,
+      "trials": 300,
+      "flag_rate": 1.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.45
+    },
+    {
+      "artifact": "railing",
+      "amplitude_uv": 500,
+      "trials": 300,
+      "flag_rate": 0.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.45
+    },
+    {
+      "artifact": "railing",
+      "amplitude_uv": 800,
+      "trials": 300,
+      "flag_rate": 0.0,
+      "unreliable_rate": 0.0,
+      "median_confidence": 0.45
+    },
+    {
+      "artifact": "railing",
+      "amplitude_uv": 1000,
+      "trials": 300,
+      "flag_rate": 1.0,
+      "unreliable_rate": 1.0,
+      "median_confidence": 0.1
+    },
+    {
+      "artifact": "railing",
+      "amplitude_uv": 1500,
+      "trials": 300,
+      "flag_rate": 1.0,
+      "unreliable_rate": 1.0,
+      "median_confidence": 0.1
+    },
+    {
+      "artifact": "flatline",
+      "amplitude_uv": 0,
+      "trials": 300,
+      "flag_rate": 1.0,
+      "unreliable_rate": 1.0,
+      "median_confidence": 0.0
+    }
+  ]
+}
