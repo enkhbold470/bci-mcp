@@ -44,6 +44,8 @@ All tools are implemented in `bci_mcp.mcp.server` and backed by `bci_mcp.mcp.ser
 | `get_brain_state` | `() → dict` | Full `BrainState` snapshot (metrics + band powers + quality) |
 | `get_band_powers` | `() → dict` | Absolute and relative band powers (delta, theta, alpha, beta, gamma) |
 | `get_signal_quality` | `() → dict` | Quality score, label (good/fair/poor), and artifact list |
+| `get_metric_definitions` | `() → dict` | Formula, literature basis and caveat for every metric, plus the pipeline's method and limitations |
+| `get_pipeline_limitations` | `() → dict` | What the pipeline is and is not: analysis method, limitations, intended use |
 | `calibrate` | `(seconds: int = 20, condition: str = "relax") → dict` | Record baseline for personalized metric scaling |
 | `record` | `(seconds: float = 10.0, path: str = "session.npz", fmt: str = None) → dict` | Record live stream to file |
 | `start_neurofeedback` | `(metric: str = "focus", target: float = 0.7) → dict` | Begin a neurofeedback session |
@@ -60,7 +62,7 @@ All tools are implemented in `bci_mcp.mcp.server` and backed by `bci_mcp.mcp.ser
 
 ## MCP Prompt
 
-`interpret_brain_state` — tells Claude to call `get_brain_state`, interpret focus/calm/attention in plain language, and suggest one actionable tip.
+`interpret_brain_state` — tells Claude to call `get_brain_state`, weight the metrics by `confidence` and `status`, state the pipeline's limits, describe what focus/calm/attention *suggest* (not prove) in plain language, and suggest one actionable tip.
 
 ## Example Claude conversation
 

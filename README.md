@@ -297,7 +297,7 @@ Restart Claude after editing config. Check `/mcp` in Claude Code or the plug ico
 
 Stdio server built with FastMCP (official MCP Python SDK).
 
-**Tools (13):** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `get_metric_definitions`, `calibrate`, `record`, `start_neurofeedback`, `get_neurofeedback_score`, `mark_event`, `stream_summary`
+**Tools (14):** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `get_metric_definitions`, `get_pipeline_limitations`, `calibrate`, `record`, `start_neurofeedback`, `get_neurofeedback_score`, `mark_event`, `stream_summary`
 
 **Resources:** `brain://state`, `brain://device`
 
@@ -312,7 +312,7 @@ Stdio server built with FastMCP (official MCP Python SDK).
 | DSP | Bandpass, notch, Welch band powers, focus/calm/attention/etc., signal quality |
 | CLI | `devices`, `stream`, `record`, `play`, `neurofeedback`, `dashboard`, `serve` |
 | Extras | Web dashboard, neurofeedback trainer, record to CSV/npz/EDF, LSL publisher |
-| Tests | Hardware-free CI (synthetic, playback, in-process LSL). Python 3.10–3.12 |
+| Tests | Hardware-free CI (synthetic, playback, in-process LSL). Python 3.10–3.14 |
 
 ## How it fits together
 
