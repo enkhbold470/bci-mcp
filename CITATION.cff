@@ -5,6 +5,7 @@ abstract: "A Model Context Protocol server that streams live EEG brain state fro
 authors:
   - family-names: Ganbold
     given-names: Enkhbold
+    orcid: "https://orcid.org/0009-0007-1785-7034"
 repository-code: "https://github.com/enkhbold470/bci-mcp"
 url: "https://enkhbold470.github.io/bci-mcp/"
 license: MIT
