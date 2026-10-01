@@ -9,6 +9,7 @@ tags:
   - neurofeedback
 authors:
   - name: Enkhbold Ganbold
+    orcid: 0009-0007-1785-7034
     affiliation: 1
 affiliations:
   - name: Independent researcher, United States
