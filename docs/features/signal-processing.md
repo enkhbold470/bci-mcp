@@ -51,7 +51,7 @@ rbp = relative_band_powers(bp)
 
 ## Cognitive metrics (`bci_mcp.dsp.metrics`)
 
-**Heuristic band-power ratios, not validated clinical measurements.** Each is a recognizable simplification of an index from the literature; `metrics.METRIC_INFO` (also exposed via the MCP `get_metric_definitions` tool) records the formula, basis, and an honest caveat for each.
+**Heuristic band-power ratios, not validated clinical measurements.** Each is a recognizable simplification of an index from the literature; `metrics.METRIC_INFO` (also exposed via the MCP `get_metric_definitions` tool) records the formula, basis, and an honest caveat for each. `bci_mcp.dsp.citations` gives the same sources as DOI-keyed references, via `get_metric_definitions` and the `brain://citations` resource.
 
 | Metric | Formula | Basis (see `METRIC_INFO` for caveats) |
 |---|---|---|
