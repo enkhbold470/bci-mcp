@@ -103,13 +103,16 @@ class BrainService:
                 "status": state["status"]}
 
     def get_metric_definitions(self) -> dict:
+        from ..dsp.citations import method_citations, metric_citations
         from ..dsp.limitations import pipeline_limitations
         from ..dsp.metrics import METRIC_INFO
 
         info = pipeline_limitations()
         return {
-            "metrics": METRIC_INFO,
+            "metrics": {name: {**entry, "references": metric_citations(name)}
+                        for name, entry in METRIC_INFO.items()},
             "method": info["method"],
+            "method_references": method_citations(),
             "limitations": info["limitations"],
             "intended_use": info["intended_use"],
             "disclaimer": (
@@ -127,6 +130,12 @@ class BrainService:
         from ..dsp.limitations import pipeline_limitations
 
         return pipeline_limitations()
+
+    def get_citations(self) -> dict:
+        """DOI-keyed references, software citation, and data provenance."""
+        from ..dsp.citations import citations
+
+        return citations()
 
     def calibrate(self, seconds: int = 20, condition: str = "relax") -> dict:
         if self._pipeline is None:

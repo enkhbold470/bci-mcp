@@ -299,7 +299,7 @@ Stdio server built with FastMCP (official MCP Python SDK).
 
 **Tools (14):** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `get_metric_definitions`, `get_pipeline_limitations`, `calibrate`, `record`, `start_neurofeedback`, `get_neurofeedback_score`, `mark_event`, `stream_summary`
 
-**Resources:** `brain://state`, `brain://device`
+**Resources:** `brain://state`, `brain://device`, `brain://citations`
 
 **Prompt:** `interpret_brain_state`
 
@@ -373,7 +373,7 @@ These are not guesses. Each metric is a ratio of EEG frequency band powers, take
 - `calm` = alpha / (alpha + beta) — alpha up, beta down, a long-known relaxation correlate
 - `attention` = beta / theta — the inverse theta/beta ratio (Lubar 1991; Monastra 1999)
 
-The full list, with every formula, the paper it comes from, and an honest caveat, lives in [`metrics.py`](src/bci_mcp/dsp/metrics.py). Claude can pull the same table at runtime with the `get_metric_definitions` tool, so it never has to invent what a number means.
+The full list, with every formula, the paper it comes from, and an honest caveat, lives in [`metrics.py`](src/bci_mcp/dsp/metrics.py). Claude can pull the same table at runtime with the `get_metric_definitions` tool, so it never has to invent what a number means. Each metric's sources come with DOIs, and the `brain://citations` resource returns them as JSON, along with the software's own citation and license. Sources that dispute a metric are tagged `caveat` so an agent can't cite them as support.
 
 To be clear: these are proxies, not clinical measurements. Band-power ratios drift with electrode contact, eye movement, and jaw tension. Treat them as rough signals for demos and neurofeedback, and read the math in the source if you want to check it.
 

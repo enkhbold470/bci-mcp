@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+- **Machine-readable citations.** The new `brain://citations` MCP resource (JSON)
+  returns DOI-keyed references for the Welch method and each metric, the
+  software's own citation and license, and a data-provenance statement (no
+  bundled datasets). `get_metric_definitions` now carries per-metric
+  `references` and `method_references`. Each source has a `role`, and sources
+  that dispute a metric (e.g. Arns et al. 2013 for the theta/beta ratio) are
+  tagged `caveat` so they are never cited as support.
+
 ## 0.2.0
 ### Signal-processing accuracy & honesty
 - **Per-reading confidence.** Every `BrainState` now carries `confidence` (0..1),

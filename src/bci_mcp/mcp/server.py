@@ -1,6 +1,7 @@
 """Real Model Context Protocol server exposing live brain state."""
 from __future__ import annotations
 
+import json
 import logging
 import os
 
@@ -121,10 +122,12 @@ def get_signal_quality() -> dict:
 
 @mcp.tool()
 def get_metric_definitions() -> dict:
-    """Explain each brain metric: its exact formula, the literature it draws on,
-    and an honest caveat. Call this to learn what focus/calm/attention/engagement/
-    fatigue/meditation actually measure and how much to trust them — they are
-    heuristic proxies, not validated cognitive measurements."""
+    """Explain each brain metric: its exact formula, the literature it draws on
+    (with DOIs under `references`), and an honest caveat. Call this to learn what
+    focus/calm/attention/engagement/fatigue/meditation actually measure and how
+    much to trust them — they are heuristic proxies, not validated cognitive
+    measurements. Cite a reference only for its `role`: a `caveat` source
+    contests the metric and must never be cited as support."""
     return _service.get_metric_definitions()
 
 
@@ -169,6 +172,14 @@ def brain_state_resource() -> str:
 def brain_device_resource() -> str:
     """Information about the connected device."""
     return str(_service.list_devices())
+
+
+@mcp.resource("brain://citations", mime_type="application/json")
+def brain_citations_resource() -> str:
+    """Machine-readable citations (JSON): DOI-keyed references for the analysis
+    method and each metric, the software's own citation and license, and data
+    provenance (bci-mcp bundles no datasets)."""
+    return json.dumps(_service.get_citations(), ensure_ascii=False, indent=2)
 
 
 @mcp.prompt()
