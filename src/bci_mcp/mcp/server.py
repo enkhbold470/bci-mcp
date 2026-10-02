@@ -161,17 +161,16 @@ def stream_summary(seconds: int = 30) -> dict:
     return _service.stream_summary(seconds)
 
 
-@mcp.resource("brain://state")
+@mcp.resource("brain://state", mime_type="application/json")
 def brain_state_resource() -> str:
-    """Live brain-state snapshot as text."""
-    state = _service.get_brain_state()
-    return str(state)
+    """Live brain-state snapshot (JSON), same shape as get_brain_state."""
+    return json.dumps(_service.get_brain_state(), indent=2)
 
 
-@mcp.resource("brain://device")
+@mcp.resource("brain://device", mime_type="application/json")
 def brain_device_resource() -> str:
-    """Information about the connected device."""
-    return str(_service.list_devices())
+    """Discoverable devices and registered URI schemes (JSON)."""
+    return json.dumps(_service.list_devices(), indent=2)
 
 
 @mcp.resource("brain://citations", mime_type="application/json")

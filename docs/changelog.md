@@ -8,6 +8,9 @@
   `references` and `method_references`. Each source has a `role`, and sources
   that dispute a metric (e.g. Arns et al. 2013 for the theta/beta ratio) are
   tagged `caveat` so they are never cited as support.
+- **`brain://state` and `brain://device` now return JSON** (`application/json`).
+  They used to return Python dict text (single quotes, `None`, `True`), which
+  JSON parsers reject.
 
 ## 0.2.0
 ### Signal-processing accuracy & honesty

@@ -57,8 +57,8 @@ All tools are implemented in `bci_mcp.mcp.server` and backed by `bci_mcp.mcp.ser
 
 | Resource URI | Description |
 |---|---|
-| `brain://state` | Live `BrainState` as text |
-| `brain://device` | Connected device info |
+| `brain://state` | JSON: live `BrainState`, same shape as `get_brain_state` (or its `error`/`warming_up` sentinel) |
+| `brain://device` | JSON: discoverable devices and registered URI schemes, same as `list_devices` |
 | `brain://citations` | JSON: DOI-keyed references for the method and each metric (each tagged `basis`, `caveat` or `implementation`), the software citation and license, and data provenance |
 
 `brain://citations` only lists sources this server actually implements. bci-mcp bundles no datasets and can't see where an upstream stream's samples came from, so it attaches no dataset license or access terms to readings. If you replay a third-party dataset into it, cite that dataset directly.

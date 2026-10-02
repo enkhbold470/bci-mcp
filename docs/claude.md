@@ -147,7 +147,7 @@ Every device backend calls `bci_mcp.core.registry.register(scheme, factory)` at 
 `bci_mcp.mcp.server` uses `FastMCP` from the official MCP Python SDK. `server.py` is a thin adapter: each `@mcp.tool()` is a one-line delegate to a module-level singleton `_service = BrainService()` (`service.py`), so the server holds **exactly one** live Pipeline/connection at a time (`connect()` stops any prior one). `BrainService` never raises for control flow — it returns sentinel dicts (`{"error": ...}` when not connected, `{"status": "warming_up"}` before the first reading); derived tools detect this via `if "metrics" not in state`. **Tests target `BrainService` directly** (no transport needed) — put testable logic there, wiring in `server.py`.
 
 - **Tools (14):** `list_devices`, `connect`, `disconnect`, `get_brain_state`, `get_band_powers`, `get_signal_quality`, `get_metric_definitions`, `get_pipeline_limitations`, `calibrate`, `mark_event`, `stream_summary`, `record`, `start_neurofeedback`, `get_neurofeedback_score`.
-- **Resources:** `brain://state`, `brain://device`, `brain://citations` (JSON). **Prompt:** `interpret_brain_state`.
+- **Resources (all JSON, `application/json`):** `brain://state`, `brain://device`, `brain://citations`. **Prompt:** `interpret_brain_state`.
 
 ## Deployment & transports
 
