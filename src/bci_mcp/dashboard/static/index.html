@@ -31,6 +31,10 @@
   .tutorial pre { overflow-x:auto; padding:0.6rem 0.75rem; margin:0.5rem 0;
                   background:#0b0e14; border-radius:4px; }
   .tutorial code { font-size:0.9em; }
+  .explorer { margin:1.5rem 0; padding:1rem; background:#141a26;
+              border:1px solid #24304a; border-radius:8px; line-height:1.5; }
+  .explorer input { display:block; width:100%; max-width:28rem; margin:0.75rem 0; }
+  .explorer p { margin:0.5rem 0; }
 </style>
 </head>
 <body>
@@ -60,6 +64,14 @@
     </ol>
     <p>Synthetic data is simulated, not your brain activity. Focus and calm are heuristic band-power proxies, not SSVEP classifiers or clinical measurements.</p>
   </details>
+  <section class="explorer" id="explorer" hidden aria-labelledby="explorer-title">
+    <h2 id="explorer-title">Synthetic signal explorer</h2>
+    <p>Change the simulated mix and watch the band columns below. Lower values add alpha; higher values add beta.</p>
+    <label for="synthetic-focus">Alpha / beta mix: <output id="synthetic-value" for="synthetic-focus"></output></label>
+    <input id="synthetic-focus" type="range" min="0" max="1" step="0.05" disabled>
+    <p>Changes affect this synthetic stream only. Allow a few seconds for the analysis window to update; the setting does not measure or change your mental state.</p>
+    <p id="synthetic-status" role="status" aria-live="polite"></p>
+  </section>
   <div id="metrics"></div>
   <div class="bands" id="bands"></div>
   <div id="signal"></div>
@@ -71,6 +83,50 @@
 <script>
 const METRICS = ["focus","calm","attention","engagement","fatigue","meditation"];
 const BANDS = ["delta","theta","alpha","beta","gamma"];
+const explorer = document.getElementById("explorer");
+const focusSlider = document.getElementById("synthetic-focus");
+const focusValue = document.getElementById("synthetic-value");
+const focusStatus = document.getElementById("synthetic-status");
+let savedFocus = null;
+
+async function loadSyntheticSettings(){
+  try {
+    const response = await fetch("/api/synthetic");
+    if (!response.ok) return;
+    const settings = await response.json();
+    savedFocus = settings.focus;
+    focusSlider.value = settings.focus;
+    focusValue.textContent = Number(settings.focus).toFixed(2);
+    explorer.hidden = false;
+    focusSlider.disabled = false;
+  } catch(e) { /* The dashboard still works without the explorer. */ }
+}
+focusSlider.addEventListener("input", () => {
+  focusValue.textContent = Number(focusSlider.value).toFixed(2);
+});
+focusSlider.addEventListener("change", async () => {
+  focusSlider.disabled = true;
+  focusStatus.textContent = "Updating synthetic signal…";
+  try {
+    const response = await fetch("/api/synthetic", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({focus: Number(focusSlider.value)})
+    });
+    if (!response.ok) throw new Error("Update failed");
+    const settings = await response.json();
+    savedFocus = settings.focus;
+    focusSlider.value = settings.focus;
+    focusValue.textContent = Number(settings.focus).toFixed(2);
+    focusStatus.textContent = "Updated. Watch the bands change over the next few seconds.";
+  } catch(e) {
+    focusSlider.value = savedFocus;
+    focusValue.textContent = Number(savedFocus).toFixed(2);
+    focusStatus.textContent = "Could not update the signal. Reload the page to try again.";
+  } finally {
+    focusSlider.disabled = false;
+  }
+});
+loadSyntheticSettings();
 const mEl = document.getElementById("metrics");
 mEl.innerHTML = METRICS.map(m =>
   `<div class="metric"><div class="label"><span>${m}</span><span id="v-${m}">–</span></div>
