@@ -51,8 +51,9 @@ class SyntheticDevice(Device):
         n = self.chunk_samples
         idx = self._t + np.arange(n)
         t = idx / fs
-        alpha_amp = 20.0 * (1.0 - self.focus) + 5.0  # 10 Hz
-        beta_amp = 18.0 * self.focus + 3.0  # 20 Hz
+        focus = self.focus  # Use the same setting for the entire chunk.
+        alpha_amp = 20.0 * (1.0 - focus) + 5.0  # 10 Hz
+        beta_amp = 18.0 * focus + 3.0  # 20 Hz
         base = (
             alpha_amp * np.sin(2 * np.pi * 10 * t)
             + beta_amp * np.sin(2 * np.pi * 20 * t)

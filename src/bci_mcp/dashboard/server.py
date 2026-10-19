@@ -6,9 +6,11 @@ from collections.abc import Iterable
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel, Field
 
+from ..devices.synthetic import SyntheticDevice
 from ..pipeline import Pipeline
 
 _STATIC = Path(__file__).parent / "static"
@@ -16,6 +18,10 @@ _STATIC = Path(__file__).parent / "static"
 # "testserver" is Starlette's TestClient default; single-label names are not
 # resolvable on the public internet, so allowing it does not weaken the check.
 _LOCAL_HOSTNAMES = frozenset({"127.0.0.1", "::1", "localhost", "testserver"})
+
+
+class SyntheticSettings(BaseModel):
+    focus: float = Field(ge=0.0, le=1.0, strict=True, allow_inf_nan=False)
 
 
 def _hostname(host_header: str) -> str:
@@ -79,6 +85,28 @@ def create_app(pipeline: Pipeline, *, extra_allowed_hosts: Iterable[str] = (),
         from ..dsp.limitations import pipeline_limitations
 
         return pipeline_limitations()
+
+    @app.get("/api/synthetic")
+    def synthetic_settings() -> SyntheticSettings:
+        if not isinstance(pipeline.device, SyntheticDevice):
+            raise HTTPException(status_code=404, detail="Synthetic device not active")
+        return SyntheticSettings(focus=pipeline.device.focus)
+
+    @app.post("/api/synthetic")
+    def set_synthetic_settings(settings: SyntheticSettings, request: Request) -> SyntheticSettings:
+        # Unlike GET, changing the stream needs an exact same-origin check.
+        try:
+            origin = urlsplit(request.headers.get("origin", ""))
+        except ValueError:
+            raise HTTPException(status_code=403, detail="Invalid origin") from None
+        if (origin.scheme not in ("http", "https") or origin.scheme != request.url.scheme or
+                origin.netloc.lower() != request.headers.get("host", "").lower() or
+                origin.path or origin.query or origin.fragment):
+            raise HTTPException(status_code=403, detail="Invalid origin")
+        if not isinstance(pipeline.device, SyntheticDevice):
+            raise HTTPException(status_code=404, detail="Synthetic device not active")
+        pipeline.device.focus = settings.focus
+        return SyntheticSettings(focus=pipeline.device.focus)
 
     @app.websocket("/ws")
     async def ws(websocket: WebSocket) -> None:

@@ -22,11 +22,70 @@
                 line-height:1.45; color:#b6c0d4; background:#141a26;
                 border:1px solid #24304a; border-radius:8px; }
   .disclaimer b { color:#e6e6e6; }
+  .tutorial { margin:1.5rem 0; padding:1rem; background:#141a26;
+              border:1px solid #24304a; border-radius:8px; line-height:1.5; }
+  .tutorial summary { cursor:pointer; font-weight:700; }
+  .tutorial p { margin:0.5rem 0; }
+  .tutorial ol { padding-left:1.5rem; margin-bottom:0; }
+  .tutorial li { margin:0.9rem 0; padding-left:0.2rem; }
+  .tutorial pre { overflow-x:auto; padding:0.6rem 0.75rem; margin:0.5rem 0;
+                  background:#0b0e14; border-radius:4px; }
+  .tutorial code { font-size:0.9em; }
+  .explorer { margin:1.5rem 0; padding:1rem; background:#141a26;
+              border:1px solid #24304a; border-radius:8px; line-height:1.5; }
+  .explorer input { display:block; width:100%; max-width:28rem; margin:0.75rem 0; }
+  .explorer p { margin:0.5rem 0; }
+  .explanation { margin:0.75rem 0; color:#c6cede; line-height:1.5; }
+  .explanation summary { cursor:pointer; color:#e6e6e6; font-weight:600; }
+  .explanation p { margin:0.5rem 0; }
 </style>
 </head>
 <body>
   <h1>BCI-MCP</h1>
   <p class="sub">Live brain state · plug your brain into any AI</p>
+  <details class="tutorial">
+    <summary>First 15 minutes: try BCI-MCP without a headset</summary>
+    <p>Use a synthetic signal to explore the dashboard, neurofeedback, recording, and replay.</p>
+    <ol>
+      <li><strong>Start the synthetic dashboard.</strong> In a terminal, run:
+        <pre><code>bci-mcp dashboard --device synthetic://</code></pre>
+        <p>Open <code>http://127.0.0.1:8000</code>. If you started this dashboard with another device, restart it with the command above to follow along.</p>
+      </li>
+      <li><strong>Watch the bars.</strong> After a short warm-up, the metric bars and relative frequency-band columns below update as the synthetic signal changes. The columns are scaled relative to the largest band, not an absolute EEG measurement.</li>
+      <li><strong>Try neurofeedback.</strong> Leave the dashboard running and open a second terminal. Run a 30-second focus session:
+        <pre><code>bci-mcp neurofeedback --device synthetic:// --metric focus --target 0.7 --seconds 30</code></pre>
+        <p>Watch the current score and time in the target zone, then read the summary. This uses a separate synthetic stream; it does not control the dashboard.</p>
+      </li>
+      <li><strong>Record a sample.</strong> In the second terminal, run:
+        <pre><code>bci-mcp record --device synthetic:// --seconds 30 --out session.npz</code></pre>
+        <p>This records a new synthetic stream to <code>session.npz</code> in that terminal's working directory, not the dashboard stream.</p>
+      </li>
+      <li><strong>Replay it.</strong> From the same directory, run:
+        <pre><code>bci-mcp play session.npz</code></pre>
+        <p>The recording loops in the terminal brain-meter. Press Ctrl+C to stop; use Ctrl+C in the dashboard terminal to stop it too.</p>
+      </li>
+    </ol>
+    <p>Synthetic data is simulated, not your brain activity. Focus and calm are heuristic band-power proxies, not SSVEP classifiers or clinical measurements.</p>
+  </details>
+  <section class="explorer" id="explorer" hidden aria-labelledby="explorer-title">
+    <h2 id="explorer-title">Synthetic signal explorer</h2>
+    <p>Change the simulated mix and watch the band columns below. Lower values add alpha; higher values add beta.</p>
+    <label for="synthetic-focus">Alpha / beta mix: <output id="synthetic-value" for="synthetic-focus"></output></label>
+    <input id="synthetic-focus" type="range" min="0" max="1" step="0.05" disabled>
+    <details class="explanation">
+      <summary>What happens when I move the slider?</summary>
+      <p>The slider changes the amplitudes of two simulated waves: lower values make the 10 Hz alpha wave stronger and the 20 Hz beta wave weaker. Higher values do the opposite. The simulated 6 Hz theta wave stays the same.</p>
+      <p>The slider value is a mix setting from 0 to 1, not the measured beta/alpha power ratio. The band columns and focus score are calculated from the resulting signal, and may take a few seconds to catch up.</p>
+    </details>
+    <p>Changes affect this synthetic stream only. Allow a few seconds for the analysis window to update; the setting does not measure or change your mental state.</p>
+    <p id="synthetic-status" role="status" aria-live="polite"></p>
+  </section>
+  <details class="explanation">
+    <summary>Concentration ratio</summary>
+    <p>Concentration ratio = beta power ÷ (alpha power + theta power). The current ratio is <strong id="focus-ratio">waiting for signal…</strong>.</p>
+    <p>The focus score below maps this ratio to a value between 0 and 1; it is not the raw ratio. More beta relative to alpha and theta tends to raise the score. Moving the synthetic slider changes the signal used in this calculation.</p>
+    <p>This is a heuristic proxy, not a direct measurement of concentration or a clinical test. Synthetic data does not represent your brain activity.</p>
+  </details>
   <div id="metrics"></div>
   <div class="bands" id="bands"></div>
   <div id="signal"></div>
@@ -35,12 +94,68 @@
     Welch PSD averages transients out (no ERPs, spindles, or bursts). Weight readings
     by confidence and treat an unreliable signal as untrustworthy.
   </div>
+  <details class="tutorial">
+    <summary>Brain wave glossary</summary>
+    <p>These names group waves by how quickly they repeat; Hz means repeats per second. The ranges below are the ones used by this dashboard; other sources may use slightly different boundaries.</p>
+    <ul>
+      <li><strong>Delta (1–4 Hz):</strong> Slow waves often associated with deep sleep. Movement or slow changes in the signal can also affect this band.</li>
+      <li><strong>Theta (4–8 Hz):</strong> Waves often seen during drowsiness and some mental tasks.</li>
+      <li><strong>Alpha (8–13 Hz):</strong> Waves often more noticeable when a person is awake and relaxed, particularly with eyes closed.</li>
+      <li><strong>Beta (13–30 Hz):</strong> Faster waves often discussed in connection with active thinking or alertness. Muscle activity can also affect this band.</li>
+      <li><strong>Gamma (30–45 Hz):</strong> Faster waves studied in relation to information processing; muscle activity can easily affect these readings.</li>
+    </ul>
+    <p>No band on its own tells you what someone is thinking or feeling. The synthetic signal is generated by the computer, not recorded from a person.</p>
+  </details>
 <script>
 const METRICS = ["focus","calm","attention","engagement","fatigue","meditation"];
 const BANDS = ["delta","theta","alpha","beta","gamma"];
+const explorer = document.getElementById("explorer");
+const focusSlider = document.getElementById("synthetic-focus");
+const focusValue = document.getElementById("synthetic-value");
+const focusStatus = document.getElementById("synthetic-status");
+let savedFocus = null;
+
+async function loadSyntheticSettings(){
+  try {
+    const response = await fetch("/api/synthetic");
+    if (!response.ok) return;
+    const settings = await response.json();
+    savedFocus = settings.focus;
+    focusSlider.value = settings.focus;
+    focusValue.textContent = Number(settings.focus).toFixed(2);
+    explorer.hidden = false;
+    focusSlider.disabled = false;
+  } catch(e) { /* The dashboard still works without the explorer. */ }
+}
+focusSlider.addEventListener("input", () => {
+  focusValue.textContent = Number(focusSlider.value).toFixed(2);
+});
+focusSlider.addEventListener("change", async () => {
+  focusSlider.disabled = true;
+  focusStatus.textContent = "Updating synthetic signal…";
+  try {
+    const response = await fetch("/api/synthetic", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({focus: Number(focusSlider.value)})
+    });
+    if (!response.ok) throw new Error("Update failed");
+    const settings = await response.json();
+    savedFocus = settings.focus;
+    focusSlider.value = settings.focus;
+    focusValue.textContent = Number(settings.focus).toFixed(2);
+    focusStatus.textContent = "Updated. Watch the bands change over the next few seconds.";
+  } catch(e) {
+    focusSlider.value = savedFocus;
+    focusValue.textContent = Number(savedFocus).toFixed(2);
+    focusStatus.textContent = "Could not update the signal. Reload the page to try again.";
+  } finally {
+    focusSlider.disabled = false;
+  }
+});
+loadSyntheticSettings();
 const mEl = document.getElementById("metrics");
 mEl.innerHTML = METRICS.map(m =>
-  `<div class="metric"><div class="label"><span>${m}</span><span id="v-${m}">–</span></div>
+  `<div class="metric"><div class="label"><span>${m === "focus" ? "Focus score" : m}</span><span id="v-${m}">–</span></div>
    <div class="bar"><div class="fill" id="f-${m}"></div></div></div>`).join("");
 const bEl = document.getElementById("bands");
 bEl.innerHTML = BANDS.map(b =>
@@ -56,6 +171,14 @@ async function tick(){
         document.getElementById("f-"+m).style.width = (v*100)+"%";
       }
       const rel = s.relative_band_powers || {};
+      const powers = s.band_powers || {};
+      const focusRatio = document.getElementById("focus-ratio");
+      if ([powers.alpha, powers.beta, powers.theta].every(Number.isFinite)) {
+        const ratio = powers.beta / (powers.alpha + powers.theta + 1e-9);
+        focusRatio.textContent = ratio >= 1000 ? ratio.toExponential(2) : ratio.toFixed(2);
+      } else {
+        focusRatio.textContent = "unavailable";
+      }
       const max = Math.max(0.001, ...BANDS.map(b => rel[b]||0));
       for (const b of BANDS)
         document.getElementById("b-"+b).style.height = (8 + 100*((rel[b]||0)/max))+"px";
