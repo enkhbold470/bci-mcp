@@ -35,6 +35,9 @@
               border:1px solid #24304a; border-radius:8px; line-height:1.5; }
   .explorer input { display:block; width:100%; max-width:28rem; margin:0.75rem 0; }
   .explorer p { margin:0.5rem 0; }
+  .explanation { margin:0.75rem 0; color:#c6cede; line-height:1.5; }
+  .explanation summary { cursor:pointer; color:#e6e6e6; font-weight:600; }
+  .explanation p { margin:0.5rem 0; }
 </style>
 </head>
 <body>
@@ -69,10 +72,21 @@
     <p>Change the simulated mix and watch the band columns below. Lower values add alpha; higher values add beta.</p>
     <label for="synthetic-focus">Alpha / beta mix: <output id="synthetic-value" for="synthetic-focus"></output></label>
     <input id="synthetic-focus" type="range" min="0" max="1" step="0.05" disabled>
+    <details class="explanation">
+      <summary>What happens when I move the slider?</summary>
+      <p>The slider changes the amplitudes of two simulated waves: lower values make the 10 Hz alpha wave stronger and the 20 Hz beta wave weaker. Higher values do the opposite. The simulated 6 Hz theta wave stays the same.</p>
+      <p>The slider value is a mix setting from 0 to 1, not the measured beta/alpha power ratio. The band columns and focus score are calculated from the resulting signal, and may take a few seconds to catch up.</p>
+    </details>
     <p>Changes affect this synthetic stream only. Allow a few seconds for the analysis window to update; the setting does not measure or change your mental state.</p>
     <p id="synthetic-status" role="status" aria-live="polite"></p>
   </section>
   <div id="metrics"></div>
+  <details class="explanation">
+    <summary>What does the focus / concentration ratio mean?</summary>
+    <p>Raw focus ratio = beta power ÷ (alpha power + theta power). The current ratio is <strong id="focus-ratio">waiting for signal…</strong>.</p>
+    <p>The focus bar above maps this ratio to a score between 0 and 1; it is not the raw ratio. More beta relative to alpha and theta tends to raise the score. Moving the synthetic slider changes the signal used in this calculation.</p>
+    <p>This is a heuristic proxy, not a direct measurement of concentration or a clinical test. Synthetic data does not represent your brain activity.</p>
+  </details>
   <div class="bands" id="bands"></div>
   <div id="signal"></div>
   <div class="disclaimer" id="disclaimer">
@@ -145,6 +159,14 @@ async function tick(){
         document.getElementById("f-"+m).style.width = (v*100)+"%";
       }
       const rel = s.relative_band_powers || {};
+      const powers = s.band_powers || {};
+      const focusRatio = document.getElementById("focus-ratio");
+      if ([powers.alpha, powers.beta, powers.theta].every(Number.isFinite)) {
+        const ratio = powers.beta / (powers.alpha + powers.theta + 1e-9);
+        focusRatio.textContent = ratio >= 1000 ? ratio.toExponential(2) : ratio.toFixed(2);
+      } else {
+        focusRatio.textContent = "unavailable";
+      }
       const max = Math.max(0.001, ...BANDS.map(b => rel[b]||0));
       for (const b of BANDS)
         document.getElementById("b-"+b).style.height = (8 + 100*((rel[b]||0)/max))+"px";
