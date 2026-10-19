@@ -35,7 +35,10 @@ lsl = ["pylsl>=1.16"]
 edf = ["pyedflib>=0.1.36"]
 dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.14", "build>=1.0"]
 docs = ["mkdocs-shadcn>=0.11", "mkdocstrings>=0.25", "mkdocstrings-python>=1.10",
-        "pymdown-extensions>=10", "pygments>=2.17"]
+        "pymdown-extensions>=10", "pygments>=2.17",
+        # pymdown-extensions 12.2+ breaks mkdocstrings < 1.0.8 (Highlight needs `md`),
+        # and mkdocstrings 1.0.8 does not install on Python 3.10.
+        "pymdown-extensions<12.2; python_version < '3.11'"]
 all = ["bci-mcp[devices,dashboard,lsl,edf]"]
 
 [project.scripts]
