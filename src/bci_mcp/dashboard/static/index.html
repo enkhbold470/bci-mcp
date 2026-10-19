@@ -22,11 +22,44 @@
                 line-height:1.45; color:#b6c0d4; background:#141a26;
                 border:1px solid #24304a; border-radius:8px; }
   .disclaimer b { color:#e6e6e6; }
+  .tutorial { margin:1.5rem 0; padding:1rem; background:#141a26;
+              border:1px solid #24304a; border-radius:8px; line-height:1.5; }
+  .tutorial summary { cursor:pointer; font-weight:700; }
+  .tutorial p { margin:0.5rem 0; }
+  .tutorial ol { padding-left:1.5rem; margin-bottom:0; }
+  .tutorial li { margin:0.9rem 0; padding-left:0.2rem; }
+  .tutorial pre { overflow-x:auto; padding:0.6rem 0.75rem; margin:0.5rem 0;
+                  background:#0b0e14; border-radius:4px; }
+  .tutorial code { font-size:0.9em; }
 </style>
 </head>
 <body>
   <h1>BCI-MCP</h1>
   <p class="sub">Live brain state · plug your brain into any AI</p>
+  <details class="tutorial">
+    <summary>First 15 minutes: try BCI-MCP without a headset</summary>
+    <p>Use a synthetic signal to explore the dashboard, neurofeedback, recording, and replay.</p>
+    <ol>
+      <li><strong>Start the synthetic dashboard.</strong> In a terminal, run:
+        <pre><code>bci-mcp dashboard --device synthetic://</code></pre>
+        <p>Open <code>http://127.0.0.1:8000</code>. If you started this dashboard with another device, restart it with the command above to follow along.</p>
+      </li>
+      <li><strong>Watch the bars.</strong> After a short warm-up, the metric bars and relative frequency-band columns below update as the synthetic signal changes. The columns are scaled relative to the largest band, not an absolute EEG measurement.</li>
+      <li><strong>Try neurofeedback.</strong> Leave the dashboard running and open a second terminal. Run a 30-second focus session:
+        <pre><code>bci-mcp neurofeedback --device synthetic:// --metric focus --target 0.7 --seconds 30</code></pre>
+        <p>Watch the current score and time in the target zone, then read the summary. This uses a separate synthetic stream; it does not control the dashboard.</p>
+      </li>
+      <li><strong>Record a sample.</strong> In the second terminal, run:
+        <pre><code>bci-mcp record --device synthetic:// --seconds 30 --out session.npz</code></pre>
+        <p>This records a new synthetic stream to <code>session.npz</code> in that terminal's working directory, not the dashboard stream.</p>
+      </li>
+      <li><strong>Replay it.</strong> From the same directory, run:
+        <pre><code>bci-mcp play session.npz</code></pre>
+        <p>The recording loops in the terminal brain-meter. Press Ctrl+C to stop; use Ctrl+C in the dashboard terminal to stop it too.</p>
+      </li>
+    </ol>
+    <p>Synthetic data is simulated, not your brain activity. Focus and calm are heuristic band-power proxies, not SSVEP classifiers or clinical measurements.</p>
+  </details>
   <div id="metrics"></div>
   <div class="bands" id="bands"></div>
   <div id="signal"></div>
