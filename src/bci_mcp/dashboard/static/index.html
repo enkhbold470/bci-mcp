@@ -81,9 +81,9 @@
     <p id="synthetic-status" role="status" aria-live="polite"></p>
   </section>
   <details class="explanation">
-    <summary>Focus/Concentration Ratio</summary>
-    <p>Raw focus ratio = beta power ÷ (alpha power + theta power). The current ratio is <strong id="focus-ratio">waiting for signal…</strong>.</p>
-    <p>The focus bar below maps this ratio to a score between 0 and 1; it is not the raw ratio. More beta relative to alpha and theta tends to raise the score. Moving the synthetic slider changes the signal used in this calculation.</p>
+    <summary>Concentration ratio</summary>
+    <p>Concentration ratio = beta power ÷ (alpha power + theta power). The current ratio is <strong id="focus-ratio">waiting for signal…</strong>.</p>
+    <p>The focus score below maps this ratio to a value between 0 and 1; it is not the raw ratio. More beta relative to alpha and theta tends to raise the score. Moving the synthetic slider changes the signal used in this calculation.</p>
     <p>This is a heuristic proxy, not a direct measurement of concentration or a clinical test. Synthetic data does not represent your brain activity.</p>
   </details>
   <div id="metrics"></div>
@@ -155,7 +155,7 @@ focusSlider.addEventListener("change", async () => {
 loadSyntheticSettings();
 const mEl = document.getElementById("metrics");
 mEl.innerHTML = METRICS.map(m =>
-  `<div class="metric"><div class="label"><span>${m}</span><span id="v-${m}">–</span></div>
+  `<div class="metric"><div class="label"><span>${m === "focus" ? "Focus score" : m}</span><span id="v-${m}">–</span></div>
    <div class="bar"><div class="fill" id="f-${m}"></div></div></div>`).join("");
 const bEl = document.getElementById("bands");
 bEl.innerHTML = BANDS.map(b =>
