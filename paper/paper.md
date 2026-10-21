@@ -97,12 +97,20 @@ question this design raises.
 
 # AI usage disclosure
 
-Much of the June 2026 rewrite was written with AI coding assistants (Claude Code,
-Cursor) working from design documents kept in `docs/superpowers/`; the author directed
-the design, integrated the NeuroFocus hardware protocol, reviewed and tested the
-changes, and is responsible for the code. The benchmark scripts and a first draft of
-this paper were prepared with an AI assistant (Claude). The author checked every
-number against the benchmark outputs and every reference against its DOI record.
+Tools: Claude Code (Anthropic Claude models) and Cursor. The exact model versions changed
+over the development period and were not logged per change.
+
+Where and how they were used: much of the June 2026 rewrite of the code was generated or
+refactored with these assistants, working from design documents kept in
+`docs/superpowers/`; they also scaffolded tests and drafted documentation. The benchmark
+scripts and a first draft of this paper were prepared with Claude.
+
+Human review: the author made the core design decisions (the pipeline, the metric
+definitions and their caveats, the confidence and artifact rules, and the MCP surface),
+integrated the NeuroFocus hardware protocol, and reviewed, edited, tested and validated
+all AI-assisted code and text. The author checked every number in this paper against the
+benchmark outputs and every reference against its DOI record, and is responsible for the
+code and the paper.
 
 # Acknowledgements
 

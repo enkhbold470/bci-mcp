@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 (2026-10-21)
+### Dashboard and onboarding (contributed by @agteo)
+- A first-steps tutorial, a synthetic signal explorer and a brain-wave glossary in the dashboard, with plainer labels for the focus and concentration ratios.
+
+### MCP resources
 - **Machine-readable citations.** The new `brain://citations` MCP resource (JSON)
   returns DOI-keyed references for the Welch method and each metric, the
   software's own citation and license, and a data-provenance statement (no
@@ -12,7 +16,6 @@
   They used to return Python dict text (single quotes, `None`, `True`), which
   JSON parsers reject.
 
-## 0.2.0
 ### Signal-processing accuracy & honesty
 - **Per-reading confidence.** Every `BrainState` now carries `confidence` (0..1),
   per-metric `metric_confidence`, and a `status` (`ok`/`warming_up`/`unreliable`),
