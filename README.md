@@ -400,6 +400,7 @@ Questions about the code: [DeepWiki](https://deepwiki.com/enkhbold470/bci-mcp). 
 | Who | Role |
 |---|---|
 | [@enkhbold470](https://github.com/enkhbold470) (Enkhbold Ganbold) | Author and maintainer: design, NeuroFocus hardware integration, review, releases |
+| [@agteo](https://github.com/agteo) (Alex Teo) | Dashboard: first-steps tutorial ([#18](https://github.com/enkhbold470/bci-mcp/pull/18)) and synthetic signal explorer ([#19](https://github.com/enkhbold470/bci-mcp/pull/19)) |
 
 **How AI coding tools were used.** Much of the June 2026 rewrite was written with AI coding
 assistants (Claude Code, Cursor) working from design specs and plans that are kept in
